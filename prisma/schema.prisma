@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AppStatus {
+  PUBLISHED
+  IN_REVIEW
+  PENDING_REVIEW
+  PENDING_PUBLICATION
+  REJECTED
+  ACTION_REQUIRED
+  UPDATE_AVAILABLE
+  STORE_ISSUES
+}
+
+enum Platform {
+  ANDROID
+  IOS
+}
+
+model App {
+  id               String          @id @default(uuid())
+  name             String
+  bundleId         String          @unique
+  platform         Platform
+  currentVersion   String?
+  buildNumber      String?
+  status           AppStatus
+  lastUpdate       DateTime?       @default(now())
+  rejectionMessage String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  statusHistory    StatusHistory[]
+
+  @@index([platform])
+  @@index([status])
+}
+
+model StatusHistory {
+  id        String   @id @default(uuid())
+  app       App      @relation(fields: [appId], references: [id], onDelete: Cascade)
+  appId     String
+  oldStatus AppStatus?
+  newStatus AppStatus
+  changedAt DateTime @default(now())
+
+  @@index([appId])
+}
+
+model StoreConfig {
+  id         String   @id @default(uuid())
+  platform   Platform @unique
+  configJson Json     // Store encrypted service accounts/API keys
+  updatedAt  DateTime @updatedAt
+}
