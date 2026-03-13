@@ -10,16 +10,23 @@ export async function getAppleToken() {
     throw new Error('Missing Apple API credentials');
   }
 
-  return jwt.sign({}, privateKey, {
-    algorithm: 'ES256',
-    expiresIn: '20m',
-    issuer: issuerId,
-    header: {
-      alg: 'ES256',
-      kid: keyId,
-      typ: 'JWT',
+  return jwt.sign(
+    {
+      iss: issuerId,
+      iat: Math.floor(Date.now() / 1000),
+      exp: Math.floor(Date.now() / 1000) + 20 * 60,
+      aud: 'appstoreconnect-v1',
     },
-  });
+    privateKey,
+    {
+      algorithm: 'ES256',
+      header: {
+        alg: 'ES256',
+        kid: keyId,
+        typ: 'JWT',
+      },
+    }
+  );
 }
 
 const statusMap: Record<string, AppStatus> = {
