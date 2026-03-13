@@ -1,15 +1,30 @@
 import { google } from 'googleapis';
 import { AppStatus } from '@prisma/client';
 
-function getAuthClient() {
-  const rawJson = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
-  if (!rawJson) throw new Error('Missing GOOGLE_SERVICE_ACCOUNT_JSON env variable');
-
-  const credentials = JSON.parse(rawJson);
+function getAuthClient(jsonString: string) {
+  const credentials = JSON.parse(jsonString);
   return new google.auth.GoogleAuth({
     credentials,
     scopes: ['https://www.googleapis.com/auth/androidpublisher'],
   });
+}
+
+async function tryFetchWithAccount(packageName: string, jsonString: string) {
+  const auth = getAuthClient(jsonString);
+  const androidpublisher = google.androidpublisher({ version: 'v3', auth });
+
+  const editInsert = await androidpublisher.edits.insert({ packageName });
+  const editId = editInsert.data.id!;
+
+  try {
+    const tracksRes = await androidpublisher.edits.tracks.list({ packageName, editId });
+    const tracks = tracksRes.data.tracks ?? [];
+    const detailsRes = await androidpublisher.edits.details.get({ packageName, editId });
+
+    return { tracks, details: detailsRes.data };
+  } finally {
+    await androidpublisher.edits.delete({ packageName, editId }).catch(() => {});
+  }
 }
 
 // Maps Google Play track status to our internal AppStatus
@@ -35,33 +50,38 @@ function mapGoogleStatus(tracks: any[]): AppStatus {
 }
 
 export async function fetchGoogleAppStatus(packageName: string) {
-  const auth = getAuthClient();
-  const androidpublisher = google.androidpublisher({ version: 'v3', auth });
+  const accounts: Array<{ label: string; json: string }> = [];
 
-  // Create a temporary edit to read track info
-  const editInsert = await androidpublisher.edits.insert({ packageName });
-  const editId = editInsert.data.id!;
+  if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON)
+    accounts.push({ label: 'BSJ', json: process.env.GOOGLE_SERVICE_ACCOUNT_JSON });
+  if (process.env.GOOGLE_BSF_SERVICE_ACCOUNT_JSON)
+    accounts.push({ label: 'BSF', json: process.env.GOOGLE_BSF_SERVICE_ACCOUNT_JSON });
 
-  try {
-    // Get all tracks (production, beta, alpha, internal)
-    const tracksRes = await androidpublisher.edits.tracks.list({ packageName, editId });
-    const tracks = tracksRes.data.tracks ?? [];
+  if (accounts.length === 0) throw new Error('No Google service account configured');
 
-    const status = mapGoogleStatus(tracks);
+  let lastError: Error | null = null;
 
-    // Get app details for version
-    const detailsRes = await androidpublisher.edits.details.get({ packageName, editId });
-    const versionCode = tracks
-      .find((t: any) => t.track === 'production')
-      ?.releases?.[0]?.versionCodes?.[0] ?? null;
+  for (const { label, json } of accounts) {
+    try {
+      console.log(`[Google] Trying ${label} account for ${packageName}...`);
+      const { tracks } = await tryFetchWithAccount(packageName, json);
 
-    return {
-      status,
-      version: detailsRes.data.defaultLanguage ?? 'N/A',
-      build: versionCode?.toString() ?? 'N/A',
-    };
-  } finally {
-    // Always delete the edit (don't leave open drafts)
-    await androidpublisher.edits.delete({ packageName, editId }).catch(() => {});
+      const status = mapGoogleStatus(tracks);
+      const versionCode = tracks
+        .find((t: any) => t.track === 'production')
+        ?.releases?.[0]?.versionCodes?.[0] ?? null;
+
+      console.log(`[Google] Found "${packageName}" using ${label} account`);
+      return {
+        status,
+        version: 'N/A',
+        build: versionCode?.toString() ?? 'N/A',
+      };
+    } catch (err: any) {
+      console.warn(`[Google] ${label} account failed for ${packageName}: ${err.message}`);
+      lastError = err;
+    }
   }
+
+  throw lastError ?? new Error(`App ${packageName} not found in any Google account`);
 }

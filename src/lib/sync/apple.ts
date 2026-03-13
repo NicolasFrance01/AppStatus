@@ -19,7 +19,23 @@ function getBeeConfig(): AppleKeyConfig {
   return {
     keyId: process.env.APPLE_BEE_KEY_ID!,
     privateKey: process.env.APPLE_BEE_PRIVATE_KEY!.replace(/\\n/g, '\n'),
-    issuerId: process.env.APPLE_ISSUER_ID!,  // Same issuer ID
+    issuerId: process.env.APPLE_ISSUER_ID!,
+  };
+}
+
+function getBsfBiConfig(): AppleKeyConfig {
+  return {
+    keyId: process.env.APPLE_BSF_BI_KEY_ID!,
+    privateKey: process.env.APPLE_BSF_BI_PRIVATE_KEY!.replace(/\\n/g, '\n'),
+    issuerId: process.env.APPLE_ISSUER_ID!,
+  };
+}
+
+function getBsfBeeConfig(): AppleKeyConfig {
+  return {
+    keyId: process.env.APPLE_BSF_BEE_KEY_ID!,
+    privateKey: process.env.APPLE_BSF_BEE_PRIVATE_KEY!.replace(/\\n/g, '\n'),
+    issuerId: process.env.APPLE_ISSUER_ID!,
   };
 }
 
@@ -74,13 +90,12 @@ async function fetchVersionStatus(appId: string, token: string) {
 
 export async function fetchAppleAppStatus(bundleId: string) {
   const configs: Array<{ label: string; config: AppleKeyConfig }> = [
-    { label: 'Main', config: getDefaultConfig() },
+    { label: 'BSJ Main', config: getDefaultConfig() },
   ];
 
-  // Add BEE config if credentials exist
-  if (process.env.APPLE_BEE_KEY_ID) {
-    configs.push({ label: 'BEE', config: getBeeConfig() });
-  }
+  if (process.env.APPLE_BEE_KEY_ID) configs.push({ label: 'BSJ BEE', config: getBeeConfig() });
+  if (process.env.APPLE_BSF_BI_KEY_ID) configs.push({ label: 'BSF BI', config: getBsfBiConfig() });
+  if (process.env.APPLE_BSF_BEE_KEY_ID) configs.push({ label: 'BSF BEE', config: getBsfBeeConfig() });
 
   let foundApp = null;
   let usedConfig: AppleKeyConfig | null = null;
