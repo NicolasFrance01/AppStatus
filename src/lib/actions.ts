@@ -44,6 +44,45 @@ export async function seedMockData() {
       buildNumber: "1",
       lastUpdate: new Date("2026-02-24"),
     },
+    // --- BSF (Banco Santa Fe) ---
+    // iOS Apps
+    {
+      name: "APP Banco Santa Fe",
+      bundleId: "com.bancosantafe.mobile",
+      platform: Platform.IOS,
+      status: AppStatus.PENDING_REVIEW,
+      currentVersion: "1.0.0",
+      buildNumber: "1",
+      lastUpdate: new Date(),
+    },
+    {
+      name: "SF Empresas",
+      bundleId: "com.empresasbsf.mobile",
+      platform: Platform.IOS,
+      status: AppStatus.PENDING_REVIEW,
+      currentVersion: "1.0.0",
+      buildNumber: "1",
+      lastUpdate: new Date(),
+    },
+    // Android Apps
+    {
+      name: "APP Banco Santa Fe",
+      bundleId: "com.bancosantafe.mobile",
+      platform: Platform.ANDROID,
+      status: AppStatus.PENDING_REVIEW,
+      currentVersion: "1.0.0",
+      buildNumber: "1",
+      lastUpdate: new Date(),
+    },
+    {
+      name: "SF Empresas",
+      bundleId: "com.empresasbsf.mobile",
+      platform: Platform.ANDROID,
+      status: AppStatus.PENDING_REVIEW,
+      currentVersion: "1.0.0",
+      buildNumber: "1",
+      lastUpdate: new Date(),
+    },
   ];
 
   for (const app of mockApps) {
