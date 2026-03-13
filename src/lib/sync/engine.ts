@@ -2,6 +2,7 @@ import { AppStatus, Platform } from "@prisma/client";
 import prisma from "../db";
 import { sendNotification } from "../notifications";
 import { fetchAppleAppStatus } from "./apple";
+import { fetchGoogleAppStatus } from "./google";
 
 export async function syncAppStatus(appId: string) {
   const app = await prisma.app.findUnique({ where: { id: appId } });
@@ -23,11 +24,20 @@ export async function syncAppStatus(appId: string) {
       console.error(`[Sync] Error fetching from Apple for ${app.name}:`, error);
       return;
     }
+  } else if (app.platform === Platform.ANDROID && process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
+    try {
+      console.log(`[Sync] Fetching REAL status for ${app.name} (${app.platform}) from Google Play...`);
+      const googleResult = await fetchGoogleAppStatus(app.bundleId);
+      newStatus = googleResult.status;
+      newVersion = googleResult.version;
+      newBuild = googleResult.build;
+    } catch (error) {
+      console.error(`[Sync] Error fetching from Google for ${app.name}:`, error);
+      return;
+    }
   } else {
-    // Simulate API Call to Store for others or if no credentials
+    // Fallback simulation if no credentials configured
     console.log(`[Sync] Fetching SIMULATED status for ${app.name} (${app.platform})...`);
-    
-    // In a real implementation for Google, we would add a google.ts similar to apple.ts
     const shouldChange = Math.random() > 0.9;
     if (shouldChange) {
       const statuses: AppStatus[] = Object.values(AppStatus);
