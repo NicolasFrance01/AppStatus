@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 
 export async function seedMockData() {
   const mockApps = [
+    // iOS Apps
     {
       name: "APP Banco San Juan",
       bundleId: "com.bancosanjuan.mobile",
@@ -18,15 +19,16 @@ export async function seedMockData() {
     {
       name: "BSJ Empresas",
       bundleId: "com.empresasbsj.mobile",
-      platform: Platform.ANDROID,
+      platform: Platform.IOS,
       status: AppStatus.PUBLISHED,
       currentVersion: "2.68.1",
       buildNumber: "1",
       lastUpdate: new Date("2026-02-24"),
     },
+    // Android Apps
     {
       name: "APP Banco San Juan",
-      bundleId: "com.bancosanjuan.mobile.android",
+      bundleId: "com.bancosanjuan.mobile",
       platform: Platform.ANDROID,
       status: AppStatus.PUBLISHED,
       currentVersion: "1.0.0",
@@ -34,20 +36,19 @@ export async function seedMockData() {
       lastUpdate: new Date("2026-03-09"),
     },
     {
-      name: "4U BSJ",
-      bundleId: "com.mobilenik.foru.bsj",
+      name: "BSJ Empresas",
+      bundleId: "com.empresasbsj.mobile",
       platform: Platform.ANDROID,
-      status: AppStatus.STORE_ISSUES,
-      currentVersion: "1.0.0",
-      buildNumber: "0",
-      lastUpdate: new Date("2019-10-18"),
-      rejectionMessage: "Retirada por Google",
-    }
+      status: AppStatus.PUBLISHED,
+      currentVersion: "2.68.1",
+      buildNumber: "1",
+      lastUpdate: new Date("2026-02-24"),
+    },
   ];
 
   for (const app of mockApps) {
     await prisma.app.upsert({
-      where: { bundleId: app.bundleId },
+      where: { bundleId_platform: { bundleId: app.bundleId, platform: app.platform } },
       update: app,
       create: app,
     });

@@ -29,7 +29,7 @@ enum Platform {
 model App {
   id               String          @id @default(uuid())
   name             String
-  bundleId         String          @unique
+  bundleId         String
   platform         Platform
   currentVersion   String?
   buildNumber      String?
@@ -40,6 +40,7 @@ model App {
   updatedAt        DateTime        @updatedAt
   statusHistory    StatusHistory[]
 
+  @@unique([bundleId, platform])
   @@index([platform])
   @@index([status])
 }
