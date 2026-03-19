@@ -1,4 +1,4 @@
-import { App, Platform } from "@prisma/client";
+import { App, Platform } from "@/generated/client";
 import { cn } from "@/lib/utils";
 import { Apple } from "lucide-react";
 

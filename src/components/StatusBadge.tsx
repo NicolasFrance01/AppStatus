@@ -1,4 +1,4 @@
-import { AppStatus } from "@prisma/client";
+import { AppStatus } from "@/generated/client";
 import { cn } from "@/lib/utils";
 
 const statusConfig: Record<AppStatus, { label: string; className: string }> = {

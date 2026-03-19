@@ -1,5 +1,5 @@
 import prisma from "./db";
-import { AppStatus } from "@prisma/client";
+import { AppStatus } from "@/generated/client";
 
 export async function sendNotification(appName: string, oldStatus: AppStatus | null, newStatus: AppStatus) {
   const message = `App Status Change: ${appName} moved from ${oldStatus || 'NONE'} to ${newStatus}`;

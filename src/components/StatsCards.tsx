@@ -1,4 +1,4 @@
-import { AppStatus, Platform } from "@prisma/client";
+import { AppStatus, Platform } from "@/generated/client";
 import { CheckCircle, Clock, AlertTriangle, XCircle, Package } from "lucide-react";
 import { cn } from "@/lib/utils";
 
