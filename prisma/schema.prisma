@@ -3,6 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  output   = "../src/generated/client"
 }
 
 datasource db {
@@ -29,6 +30,9 @@ enum Platform {
 model App {
   id               String          @id @default(uuid())
   name             String
+  entity           String?         // BSJ, BSF, etc.
+  storeStatus      String?         // Estado de la aplicación
+  updateStatus     String?         // Estado de actualización
   bundleId         String
   platform         Platform
   currentVersion   String?
@@ -39,6 +43,7 @@ model App {
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
   statusHistory    StatusHistory[]
+  storeUrl         String?         // URL for redirection to store console
 
   @@unique([bundleId, platform])
   @@index([platform])
@@ -56,9 +61,37 @@ model StatusHistory {
   @@index([appId])
 }
 
+enum Role {
+  ADMIN
+  DEVELOPER
+  READER
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String
+  name          String?
+  role          Role      @default(READER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
 model StoreConfig {
   id         String   @id @default(uuid())
   platform   Platform @unique
   configJson Json     // Store encrypted service accounts/API keys
   updatedAt  DateTime @updatedAt
+}
+model SyncHistory {
+  id             String    @id @default(uuid())
+  startedAt      DateTime  @default(now())
+  completedAt    DateTime?
+  status         String    @default("IN_PROGRESS") // IN_PROGRESS, COMPLETED, FAILED
+  triggeredBy    String    // User email or name
+  totalApps      Int
+  processedApps  Int       @default(0)
+  errorMessage   String?
+
+  @@index([startedAt])
 }

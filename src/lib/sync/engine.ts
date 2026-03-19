@@ -1,4 +1,4 @@
-import { AppStatus, Platform } from "@prisma/client";
+import { AppStatus, Platform } from "@/generated/client";
 import prisma from "../db";
 import { sendNotification } from "../notifications";
 import { fetchAppleAppStatus } from "./apple";
@@ -71,9 +71,41 @@ export async function syncAppStatus(appId: string) {
   }
 }
 
-export async function syncAllApps() {
+export async function syncAllApps(historyId?: string) {
   const apps = await prisma.app.findMany();
+  const totalApps = apps.length;
+
+  if (historyId) {
+    await prisma.syncHistory.update({
+      where: { id: historyId },
+      data: { totalApps }
+    });
+  }
+
+  let processedCount = 0;
   for (const app of apps) {
-    await syncAppStatus(app.id);
+    try {
+      await syncAppStatus(app.id);
+    } catch (error) {
+      console.error(`[Sync] error syncing app ${app.name}:`, error);
+    }
+    processedCount++;
+    
+    if (historyId) {
+      await prisma.syncHistory.update({
+        where: { id: historyId },
+        data: { processedApps: processedCount }
+      });
+    }
+  }
+
+  if (historyId) {
+    await prisma.syncHistory.update({
+      where: { id: historyId },
+      data: { 
+        status: "COMPLETED",
+        completedAt: new Date()
+      }
+    });
   }
 }

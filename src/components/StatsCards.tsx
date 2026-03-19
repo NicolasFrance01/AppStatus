@@ -7,12 +7,15 @@ interface StatsCardsProps {
     total: number;
     published: number;
     inReview: number;
+    pendingPublication: number;
     rejected: number;
     actionRequired: number;
   };
+  selectedStatus: string | null;
+  onStatusChange: (status: string | null) => void;
 }
 
-export function StatsCards({ stats }: StatsCardsProps) {
+export function StatsCards({ stats, selectedStatus, onStatusChange }: StatsCardsProps) {
   const cards = [
     {
       label: "Total Apps",
@@ -20,6 +23,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
       icon: Package,
       color: "text-slate-600",
       bg: "bg-slate-50",
+      status: null,
     },
     {
       label: "Published",
@@ -27,6 +31,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
       icon: CheckCircle,
       color: "text-emerald-600",
       bg: "bg-emerald-50",
+      status: "PUBLISHED",
     },
     {
       label: "In Review",
@@ -34,6 +39,15 @@ export function StatsCards({ stats }: StatsCardsProps) {
       icon: Clock,
       color: "text-amber-600",
       bg: "bg-amber-50",
+      status: "IN_REVIEW",
+    },
+    {
+      label: "Pending Publication",
+      value: stats.pendingPublication,
+      icon: Clock,
+      color: "text-blue-600",
+      bg: "bg-blue-50",
+      status: "PENDING_PUBLICATION",
     },
     {
       label: "Rejected",
@@ -41,6 +55,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
       icon: XCircle,
       color: "text-rose-600",
       bg: "bg-rose-50",
+      status: "REJECTED",
     },
     {
       label: "Action Required",
@@ -48,30 +63,40 @@ export function StatsCards({ stats }: StatsCardsProps) {
       icon: AlertTriangle,
       color: "text-orange-600",
       bg: "bg-orange-50",
+      status: "ACTION_REQUIRED",
     },
   ];
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-      {cards.map((card) => (
-        <div
-          key={card.label}
-          className={cn(
-            "rounded-xl border border-slate-200 p-6 shadow-sm transition-all hover:shadow-md",
-            card.bg
-          )}
-        >
-          <div className="flex items-center gap-4">
-            <div className={cn("rounded-lg p-2 bg-white shadow-sm", card.color)}>
-              <card.icon size={24} />
+    <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6 mb-8">
+      {cards.map((card) => {
+        const isActive = selectedStatus === card.status;
+        return (
+          <button
+            key={card.label}
+            onClick={() => onStatusChange(card.status)}
+            className={cn(
+              "rounded-xl border p-5 shadow-sm transition-all text-left",
+              card.bg,
+              isActive 
+                ? "border-blue-500 ring-2 ring-blue-200 shadow-md transform scale-[1.02]" 
+                : "border-slate-200 hover:shadow-md hover:border-slate-300 active:scale-95"
+            )}
+          >
+            <div className="flex items-center gap-3">
+              <div className={cn("rounded-lg p-1.5 bg-white shadow-sm flex-shrink-0", card.color)}>
+                <card.icon size={18} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider leading-tight">
+                  {card.label}
+                </p>
+                <p className="text-xl font-bold text-slate-900 leading-none mt-0.5">{card.value}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-medium text-slate-500">{card.label}</p>
-              <p className="text-2xl font-bold text-slate-900">{card.value}</p>
-            </div>
-          </div>
-        </div>
-      ))}
+          </button>
+        );
+      })}
     </div>
   );
 }

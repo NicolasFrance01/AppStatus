@@ -1,5 +1,5 @@
 import { google } from 'googleapis';
-import { AppStatus } from '@prisma/client';
+import { AppStatus } from '@/generated/client';
 
 function getAuthClient(jsonString: string) {
   const credentials = JSON.parse(jsonString);
@@ -27,26 +27,66 @@ async function tryFetchWithAccount(packageName: string, jsonString: string) {
   }
 }
 
-// Maps Google Play track status to our internal AppStatus
-function mapGoogleStatus(tracks: any[]): AppStatus {
-  if (!tracks || tracks.length === 0) return AppStatus.PENDING_REVIEW;
-
-  // Check production track first, then others
-  const ordered = ['production', 'beta', 'alpha', 'internal'];
-  for (const trackName of ordered) {
-    const track = tracks.find((t: any) => t.track === trackName);
-    if (!track?.releases?.length) continue;
-
-    const release = track.releases[0];
-    const status = release.status;
-
-    if (status === 'completed') return AppStatus.PUBLISHED;
-    if (status === 'inProgress') return AppStatus.IN_REVIEW;
-    if (status === 'halted') return AppStatus.STORE_ISSUES;
-    if (status === 'draft') return AppStatus.PENDING_PUBLICATION;
+// Maps Google Play track status to our internal AppStatus and detailed labels
+function mapGoogleStatus(tracks: any[]) {
+  if (!tracks || tracks.length === 0) {
+    return {
+      status: AppStatus.PENDING_REVIEW,
+      storeStatus: 'Unknown',
+      updateStatus: 'No releases'
+    };
   }
 
-  return AppStatus.PENDING_REVIEW;
+  const productionTrack = tracks.find((t: any) => t.track === 'production');
+  const otherTracks = tracks.filter((t: any) => t.track !== 'production');
+
+  const mainTrack = productionTrack || otherTracks[0];
+  const trackName = mainTrack.track === 'production' ? 'Producción' : 
+                   mainTrack.track === 'beta' ? 'Pruebas abiertas' :
+                   mainTrack.track === 'alpha' ? 'Pruebas cerradas' : 'Pruebas internas';
+
+  if (mainTrack?.releases?.length) {
+    const release = mainTrack.releases[0];
+    const status = release.status;
+
+    let appStatus: AppStatus = AppStatus.PENDING_REVIEW;
+    let updateLabel = status;
+
+    if (status === 'completed') {
+      appStatus = AppStatus.PUBLISHED;
+      updateLabel = 'Publicado';
+    } else if (status === 'inProgress') {
+      appStatus = AppStatus.IN_REVIEW;
+      updateLabel = 'En revisión / Rollout';
+    } else if (status === 'halted') {
+      appStatus = AppStatus.STORE_ISSUES;
+      updateLabel = 'Detenido';
+    } else if (status === 'draft') {
+      appStatus = AppStatus.PENDING_PUBLICATION;
+      updateLabel = 'Lista para publicarse';
+    }
+
+    return {
+      status: appStatus,
+      storeStatus: trackName,
+      updateStatus: updateLabel
+    };
+  }
+
+  return {
+    status: AppStatus.PENDING_REVIEW,
+    storeStatus: trackName,
+    updateStatus: 'Sin lanzamientos'
+  };
+}
+
+async function getStoreVersion(packageName: string) {
+  try {
+    const r = await fetch(`https://play.google.com/store/apps/details?id=${packageName}&hl=es-419`);
+    const html = await r.text();
+    const m = html.match(/\[\[\["([\d\.]+)"\]/);
+    return m ? m[1] : null;
+  } catch (e) { return null; }
 }
 
 export async function fetchGoogleAppStatus(packageName: string) {
@@ -56,6 +96,10 @@ export async function fetchGoogleAppStatus(packageName: string) {
     accounts.push({ label: 'BSJ', json: process.env.GOOGLE_SERVICE_ACCOUNT_JSON });
   if (process.env.GOOGLE_BSF_SERVICE_ACCOUNT_JSON)
     accounts.push({ label: 'BSF', json: process.env.GOOGLE_BSF_SERVICE_ACCOUNT_JSON });
+  if (process.env.GOOGLE_BER_SERVICE_ACCOUNT_JSON)
+    accounts.push({ label: 'BER', json: process.env.GOOGLE_BER_SERVICE_ACCOUNT_JSON });
+  if (process.env.GOOGLE_BSC_SERVICE_ACCOUNT_JSON)
+    accounts.push({ label: 'BSC', json: process.env.GOOGLE_BSC_SERVICE_ACCOUNT_JSON });
 
   if (accounts.length === 0) throw new Error('No Google service account configured');
 
@@ -66,16 +110,32 @@ export async function fetchGoogleAppStatus(packageName: string) {
       console.log(`[Google] Trying ${label} account for ${packageName}...`);
       const { tracks } = await tryFetchWithAccount(packageName, json);
 
-      const status = mapGoogleStatus(tracks);
-      const versionCode = tracks
-        .find((t: any) => t.track === 'production')
-        ?.releases?.[0]?.versionCodes?.[0] ?? null;
+      const statusInfo = mapGoogleStatus(tracks);
+      const mainRel = tracks.find((t: any) => t.track === 'production' || t.track === 'beta')?.releases?.[0];
+      const apiVersion = mainRel?.name ?? 'N/A';
+      const build = mainRel?.versionCodes?.[0]?.toString() ?? 'N/A';
+
+      let finalStatus = statusInfo.status;
+      let finalUpdateLabel = statusInfo.updateStatus;
+
+      // Managed Publishing Heuristic:
+      // If API says completed but store version is different (older), it's "Ready to publish"
+      if (statusInfo.status === AppStatus.PUBLISHED) {
+        const storeVersion = await getStoreVersion(packageName);
+        if (storeVersion && storeVersion !== apiVersion) {
+          finalStatus = AppStatus.PENDING_PUBLICATION;
+          finalUpdateLabel = 'Lista para publicarse';
+          console.log(`[Google] Managed Publishing detected for ${packageName}: Store(${storeVersion}) vs API(${apiVersion})`);
+        }
+      }
 
       console.log(`[Google] Found "${packageName}" using ${label} account`);
       return {
-        status,
-        version: 'N/A',
-        build: versionCode?.toString() ?? 'N/A',
+        ...statusInfo,
+        status: finalStatus,
+        updateStatus: finalUpdateLabel,
+        version: apiVersion,
+        build,
       };
     } catch (err: any) {
       console.warn(`[Google] ${label} account failed for ${packageName}: ${err.message}`);

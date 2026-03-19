@@ -40,4 +40,12 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-/src/generated/prisma
+/src/generated/client
+*.mjs
+!next.config.ts
+!eslint.config.mjs
+!postcss.config.mjs
+!next.config.mjs
+!next-auth.mjs
+!.next
+!prisma/seed-admin.mjs
