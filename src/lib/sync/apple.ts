@@ -7,32 +7,37 @@ interface AppleKeyConfig {
   issuerId: string;
 }
 
+function formatPrivateKey(pk: string | undefined): string | undefined {
+  if (!pk) return undefined;
+  let key = pk.trim();
+  if ((key.startsWith('"') && key.endsWith('"')) || (key.startsWith("'") && key.endsWith("'"))) {
+    key = key.slice(1, -1).trim();
+  }
+  key = key.replace(/\\n/g, '\n');
+  
+  const header = '-----BEGIN PRIVATE KEY-----';
+  const footer = '-----END PRIVATE KEY-----';
+  
+  if (key.includes(header) && key.includes(footer)) {
+    const startIdx = key.indexOf(header) + header.length;
+    const endIdx = key.indexOf(footer);
+    let body = key.substring(startIdx, endIdx);
+    body = body.replace(/\\n/g, '').replace(/\s+/g, '');
+    
+    const lines = body.match(/.{1,64}/g) || [body];
+    return `${header}\n${lines.join('\n')}\n${footer}`;
+  }
+  
+  return key;
+}
+
 function getConfigs(): Array<{ label: string; config: AppleKeyConfig }> {
   const configs: Array<{ label: string; config: AppleKeyConfig }> = [];
   
   const add = (label: string, kid: string | undefined, pk: string | undefined, iss: string | undefined) => {
-    if (kid && pk && iss) {
-      let key = pk.trim();
-      // Remove surrounding quotes if accidentally included
-      if ((key.startsWith('"') && key.endsWith('"')) || (key.startsWith("'") && key.endsWith("'"))) {
-        key = key.slice(1, -1).trim();
-      }
-      
-      // Replace literal '\n' with actual newlines
-      key = key.replace(/\\n/g, '\n');
-
-      // If there are still no actual newlines but it has header/footer (spaces instead of newlines)
-      if (!key.includes('\n')) {
-        const header = '-----BEGIN PRIVATE KEY-----';
-        const footer = '-----END PRIVATE KEY-----';
-        if (key.includes(header) && key.includes(footer)) {
-          let body = key.replace(header, '').replace(footer, '').replace(/\s+/g, '');
-          const lines = body.match(/.{1,64}/g) || [body];
-          key = `${header}\n${lines.join('\n')}\n${footer}`;
-        }
-      }
-
-      configs.push({ label, config: { keyId: kid, privateKey: key, issuerId: iss } });
+    const formattedKey = formatPrivateKey(pk);
+    if (kid && formattedKey && iss) {
+      configs.push({ label, config: { keyId: kid, privateKey: formattedKey, issuerId: iss } });
     }
   };
 
