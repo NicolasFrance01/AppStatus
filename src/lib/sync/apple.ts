@@ -12,7 +12,27 @@ function getConfigs(): Array<{ label: string; config: AppleKeyConfig }> {
   
   const add = (label: string, kid: string | undefined, pk: string | undefined, iss: string | undefined) => {
     if (kid && pk && iss) {
-      configs.push({ label, config: { keyId: kid, privateKey: pk.replace(/\\n/g, '\n'), issuerId: iss } });
+      let key = pk.trim();
+      // Remove surrounding quotes if accidentally included
+      if ((key.startsWith('"') && key.endsWith('"')) || (key.startsWith("'") && key.endsWith("'"))) {
+        key = key.slice(1, -1).trim();
+      }
+      
+      // Replace literal '\n' with actual newlines
+      key = key.replace(/\\n/g, '\n');
+
+      // If there are still no actual newlines but it has header/footer (spaces instead of newlines)
+      if (!key.includes('\n')) {
+        const header = '-----BEGIN PRIVATE KEY-----';
+        const footer = '-----END PRIVATE KEY-----';
+        if (key.includes(header) && key.includes(footer)) {
+          let body = key.replace(header, '').replace(footer, '').replace(/\s+/g, '');
+          const lines = body.match(/.{1,64}/g) || [body];
+          key = `${header}\n${lines.join('\n')}\n${footer}`;
+        }
+      }
+
+      configs.push({ label, config: { keyId: kid, privateKey: key, issuerId: iss } });
     }
   };
 
