@@ -12,6 +12,7 @@ import { App } from "@/generated/client";
 import { cn, formatRelativeTime } from "@/lib/utils";
 import { UserManagement } from "../components/UserManagement";
 import MyProfile from "../components/MyProfile";
+import { SystemConfig } from "../components/SystemConfig";
 
 export default function DashboardPage() {
   const { data: session } = useSession();
@@ -32,6 +33,27 @@ export default function DashboardPage() {
   const [syncInfo, setSyncInfo] = useState<any>(null);
   const [showHistory, setShowHistory] = useState(false);
   const [syncHistory, setSyncHistory] = useState<any[]>([]);
+  const [showConfig, setShowConfig] = useState(false);
+
+  // Lazy Sync Engine
+  const checkLazySync = useCallback(async (currentSyncInfo: any) => {
+    if (!currentSyncInfo) return;
+    
+    try {
+      // Trigger background sync task
+      // The API will check itself if it's overdue based on SystemConfig
+      const res = await fetch('/api/sync?task=true');
+      const data = await res.json();
+      if (data.success) {
+        console.log("[LazySync] Background synchronization triggered.");
+        // Refresh local data if something changed
+        loadSyncInfo();
+        loadApps();
+      }
+    } catch (err) {
+      console.error("[LazySync] Check failed:", err);
+    }
+  }, []);
 
   const loadApps = useCallback(async () => {
     const response = await fetch('/api/apps');
@@ -111,11 +133,20 @@ export default function DashboardPage() {
 
   useEffect(() => {
     loadApps();
-    loadSyncInfo();
+    loadSyncInfo().then(() => {
+      // Check lazy sync after initial load
+    });
     fetchAlerts();
     const interval = setInterval(fetchAlerts, 60000);
     return () => clearInterval(interval);
   }, [loadApps, loadSyncInfo, session]);
+
+  // Trigger lazy sync check when syncInfo is available
+  useEffect(() => {
+    if (syncInfo && !isSyncing) {
+      checkLazySync(syncInfo);
+    }
+  }, [syncInfo, isSyncing, checkLazySync]);
 
   // Poll sync status if syncing
   useEffect(() => {
@@ -312,16 +343,26 @@ export default function DashboardPage() {
                 </button>
 
                 {isAdmin && (
-                  <button 
-                    onClick={() => {
-                      loadSyncHistory();
-                      setShowHistory(true);
-                    }}
-                    className="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-bold text-slate-700 transition-all hover:bg-slate-200"
-                    title="Ver Historial"
-                  >
-                    <History size={18} />
-                  </button>
+                  <>
+                    <button 
+                      onClick={() => setShowConfig(true)}
+                      className="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-bold text-slate-700 transition-all hover:bg-slate-200"
+                      title="Configuración de Sincronización"
+                    >
+                      <Clock size={18} />
+                    </button>
+
+                    <button 
+                      onClick={() => {
+                        loadSyncHistory();
+                        setShowHistory(true);
+                      }}
+                      className="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-bold text-slate-700 transition-all hover:bg-slate-200"
+                      title="Ver Historial"
+                    >
+                      <History size={18} />
+                    </button>
+                  </>
                 )}
 
                 {isDeveloper && (
@@ -402,7 +443,7 @@ export default function DashboardPage() {
 
               {isReader && !showSummary && (
                 <div className="bg-white rounded-3xl p-12 border border-slate-200 text-center animate-pulse">
-                  <p className="text-slate-400 font-medium italic">Activa "Ver Resumen" para visualizar el tablero ejecutivo.</p>
+                  <p className="text-slate-400 font-medium italic">Activa &quot;Ver Resumen&quot; para visualizar el tablero ejecutivo.</p>
                 </div>
               )}
             </div>
@@ -507,6 +548,16 @@ export default function DashboardPage() {
           </p>
         </div>
       </footer>
+      {/* System Configuration Modal */}
+      {showConfig && (
+        <SystemConfig 
+          onClose={() => setShowConfig(false)} 
+          onUpdate={() => {
+            loadSyncInfo();
+            loadApps();
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -116,3 +116,11 @@ model SyncHistory {
 
   @@index([startedAt])
 }
+
+model SystemConfig {
+  id                  String   @id @default("singleton")
+  syncIntervalMinutes Int      @default(60)
+  lastAutoSyncAt      DateTime @default(now())
+  autoSyncEnabled     Boolean  @default(true)
+  updatedAt           DateTime @updatedAt
+}

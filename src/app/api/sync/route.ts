@@ -15,6 +15,8 @@ export async function POST(req: Request) {
 
 async function handleSync(req: Request) {
   try {
+    const { searchParams } = new URL(req.url);
+    const isTask = searchParams.get('task') === 'true';
     const authHeader = req.headers.get('Authorization');
     const isCron = authHeader === `Bearer ${process.env.CRON_SECRET}`;
     
@@ -24,6 +26,29 @@ async function handleSync(req: Request) {
     if (isCron) {
       triggeredBy = "Automatizado";
       isAllowed = true;
+    } else if (isTask) {
+      // Internal Scheduler Check
+      const config = await prisma.systemConfig.findUnique({ where: { id: 'singleton' } });
+      if (!config || !config.autoSyncEnabled) {
+        return NextResponse.json({ success: false, message: "Auto-sync desactivado" });
+      }
+
+      const now = new Date();
+      const lastSync = config.lastAutoSyncAt;
+      const intervalMs = config.syncIntervalMinutes * 60 * 1000;
+
+      if (now.getTime() - lastSync.getTime() < intervalMs) {
+        return NextResponse.json({ success: false, message: "Sincronización no requerida aún" });
+      }
+
+      triggeredBy = "Automatizado";
+      isAllowed = true;
+
+      // Update timestamp immediately to prevent race conditions
+      await prisma.systemConfig.update({
+        where: { id: 'singleton' },
+        data: { lastAutoSyncAt: now }
+      });
     } else {
       const session = await getServerSession(authOptions);
       const user = session?.user as { role?: string; name?: string | null; email?: string } | undefined;
