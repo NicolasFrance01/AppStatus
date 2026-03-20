@@ -79,9 +79,12 @@ const statusMap: Record<string, AppStatus> = {
   PENDING_DEVELOPER_RELEASE: AppStatus.PENDING_PUBLICATION,
   REJECTED: AppStatus.REJECTED,
   METADATA_REJECTED: AppStatus.REJECTED,
+  DEVELOPER_REJECTED: AppStatus.REJECTED,
   PREPARE_FOR_SUBMISSION: AppStatus.PENDING_REVIEW,
   INVALID_BINARY: AppStatus.STORE_ISSUES,
   PROCESSING_FOR_APP_STORE: AppStatus.PENDING_PUBLICATION,
+  REMOVED_FROM_SALE: AppStatus.STORE_ISSUES,
+  DEVELOPER_REMOVED_FROM_SALE: AppStatus.STORE_ISSUES,
 };
 
 async function fetchAppWithConfig(bundleId: string, config: AppleKeyConfig) {
@@ -139,9 +142,12 @@ export async function fetchAppleAppStatus(bundleId: string) {
     PENDING_DEVELOPER_RELEASE: 'Pendiente de publicación',
     REJECTED: 'Rechazado',
     METADATA_REJECTED: 'Rechazado (Metadatos)',
+    DEVELOPER_REJECTED: 'Rechazado por desarrollador',
     PREPARE_FOR_SUBMISSION: 'Preparando para envío',
     INVALID_BINARY: 'Binario inválido',
     PROCESSING_FOR_APP_STORE: 'Procesando',
+    REMOVED_FROM_SALE: 'Retirado de venta',
+    DEVELOPER_REMOVED_FROM_SALE: 'Retirado por desarrollador',
   };
 
   return {
