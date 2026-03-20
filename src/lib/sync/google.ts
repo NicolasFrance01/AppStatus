@@ -57,13 +57,14 @@ function mapGoogleStatus(tracks: any[]) {
       updateLabel = 'Publicado';
     } else if (status === 'inProgress') {
       appStatus = AppStatus.IN_REVIEW;
-      updateLabel = 'En revisión / Rollout';
+      const pct = release.userFraction ? ` (${Math.round(release.userFraction * 100)}%)` : '';
+      updateLabel = `En revisión / Rollout${pct}`;
     } else if (status === 'halted') {
       appStatus = AppStatus.STORE_ISSUES;
       updateLabel = 'Detenido';
     } else if (status === 'draft') {
-      appStatus = AppStatus.PENDING_PUBLICATION;
-      updateLabel = 'Lista para publicarse';
+      appStatus = AppStatus.PENDING_REVIEW;
+      updateLabel = 'Borrador / Pendiente de envío';
     }
 
     return {
@@ -119,12 +120,14 @@ export async function fetchGoogleAppStatus(packageName: string) {
       let finalUpdateLabel = statusInfo.updateStatus;
 
       // Managed Publishing Heuristic:
-      // If API says completed but store version is different (older), it's "Ready to publish"
+      // If API says completed but store version is different (older), it's "Ready to publish" or "In Review"
       if (statusInfo.status === AppStatus.PUBLISHED) {
         const storeVersion = await getStoreVersion(packageName);
         if (storeVersion && storeVersion !== apiVersion) {
-          finalStatus = AppStatus.PENDING_PUBLICATION;
-          finalUpdateLabel = 'Lista para publicarse';
+          // Since we can't differenciate "In Review" and "Approved" via API when Managed Publishing is ON,
+          // we use a more descriptive status and label.
+          finalStatus = AppStatus.IN_REVIEW; 
+          finalUpdateLabel = 'En revisión / Pendiente (Envío gestionado)';
           console.log(`[Google] Managed Publishing detected for ${packageName}: Store(${storeVersion}) vs API(${apiVersion})`);
         }
       }
