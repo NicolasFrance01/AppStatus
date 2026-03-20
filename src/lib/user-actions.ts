@@ -74,3 +74,31 @@ export async function updateUserRole(id: string, role: Role) {
     data: { role }
   });
 }
+
+export async function updateUser(id: string, data: { email: string; name: string; password?: string; role: Role }) {
+  await checkAdmin();
+  
+  // Checking email conflict
+  const existingUser = await prisma.user.findUnique({
+    where: { email: data.email }
+  });
+
+  if (existingUser && existingUser.id !== id) {
+    throw new Error("El email ya está registrado por otro usuario.");
+  }
+
+  const updateData: any = {
+    email: data.email,
+    name: data.name,
+    role: data.role,
+  };
+
+  if (data.password && data.password.trim() !== "") {
+    updateData.password = await bcrypt.hash(data.password, 10);
+  }
+
+  return await prisma.user.update({
+    where: { id },
+    data: updateData
+  });
+}

@@ -10,14 +10,16 @@ import {
   Loader2,
   CheckCircle2,
   AlertCircle,
-  AlertTriangle
+  AlertTriangle,
+  Pencil
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { 
   getUsers, 
   createUser, 
   deleteUser, 
-  updateUserRole 
+  updateUserRole,
+  updateUser 
 } from "@/lib/user-actions";
 import { Role } from "@/generated/client";
 
@@ -37,6 +39,8 @@ export function UserManagement() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
 
   // Form state
   const [email, setEmail] = useState("");
@@ -60,18 +64,23 @@ export function UserManagement() {
     loadUsers();
   }, []);
 
-  const handleCreateUser = async (e: React.FormEvent) => {
+  const handleSaveUser = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsActionLoading(true);
     setError(null);
     try {
-      await createUser({ email, name, password, role });
-      setSuccess("Usuario creado correctamente.");
+      if (editingUserId) {
+        await updateUser(editingUserId, { email, name, password, role });
+        setSuccess("Usuario actualizado correctamente.");
+      } else {
+        await createUser({ email, name, password, role });
+        setSuccess("Usuario creado correctamente.");
+      }
       setShowAddModal(false);
       resetForm();
       loadUsers();
     } catch (err: any) {
-      setError(err.message || "Error al crear usuario.");
+      setError(err.message || "Error al guardar usuario.");
     } finally {
       setIsActionLoading(false);
     }
@@ -106,11 +115,28 @@ export function UserManagement() {
     }
   };
 
+  const openEditModal = (user: User) => {
+    setEditingUserId(user.id);
+    setEmail(user.email);
+    setName(user.name || "");
+    setPassword(""); 
+    setRole(user.role);
+    setShowAddModal(true);
+    setError(null);
+  };
+
+  const openAddModal = () => {
+    resetForm();
+    setShowAddModal(true);
+    setError(null);
+  };
+
   const resetForm = () => {
     setEmail("");
     setName("");
     setPassword("");
     setRole("READER");
+    setEditingUserId(null);
   };
 
   useEffect(() => {
@@ -137,7 +163,7 @@ export function UserManagement() {
         </div>
 
         <button
-          onClick={() => { setShowAddModal(true); setError(null); }}
+          onClick={openAddModal}
           className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-slate-200 transition-all hover:bg-slate-800 active:scale-[0.98]"
         >
           <UserPlus size={18} />
@@ -249,13 +275,22 @@ export function UserManagement() {
                         </select>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button
-                          onClick={() => setConfirmDeleteId(user.id)}
-                          className="p-2 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
-                          title="Eliminar Usuario"
-                        >
-                          <Trash2 size={18} />
-                        </button>
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => openEditModal(user)}
+                            className="p-2 text-slate-300 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
+                            title="Editar Usuario"
+                          >
+                            <Pencil size={18} />
+                          </button>
+                          <button
+                            onClick={() => setConfirmDeleteId(user.id)}
+                            className="p-2 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
+                            title="Eliminar Usuario"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   )
@@ -269,16 +304,20 @@ export function UserManagement() {
       {/* Modal Añadir Usuario */}
       {showAddModal && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => { setShowAddModal(false); setError(null); }} />
+          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => { setShowAddModal(false); setError(null); resetForm(); }} />
           <div className="relative bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="p-8">
               <div className="flex items-center justify-between mb-8">
                 <div>
-                  <h3 className="text-2xl font-black text-slate-900 tracking-tight leading-tight">Registrar Usuario</h3>
-                  <p className="text-slate-500 text-sm font-medium">Asigna un nuevo integrante al equipo.</p>
+                  <h3 className="text-2xl font-black text-slate-900 tracking-tight leading-tight">
+                    {editingUserId ? "Editar Usuario" : "Registrar Usuario"}
+                  </h3>
+                  <p className="text-slate-500 text-sm font-medium">
+                    {editingUserId ? "Modifica los datos o permisos del usuario." : "Asigna un nuevo integrante al equipo."}
+                  </p>
                 </div>
                 <button 
-                  onClick={() => { setShowAddModal(false); setError(null); }}
+                  onClick={() => { setShowAddModal(false); setError(null); resetForm(); }}
                   className="p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-colors"
                 >
                   <X size={24} />
@@ -292,7 +331,7 @@ export function UserManagement() {
                 </div>
               )}
 
-              <form onSubmit={handleCreateUser} className="space-y-5">
+              <form onSubmit={handleSaveUser} className="space-y-5">
                 <div className="grid grid-cols-1 gap-4">
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Nombre Completo</label>
@@ -320,12 +359,12 @@ export function UserManagement() {
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Contraseña</label>
                     <input
                       type="password"
-                      required
+                      required={!editingUserId}
                       minLength={6}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
-                      placeholder="Mínimo 6 caracteres"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium placeholder:text-slate-400"
+                      placeholder={editingUserId ? "Dejar en blanco para conservar" : "Mínimo 6 caracteres"}
                     />
                   </div>
                   <div className="space-y-2">
@@ -360,7 +399,7 @@ export function UserManagement() {
                 <div className="flex gap-3 pt-2">
                   <button
                     type="button"
-                    onClick={() => { setShowAddModal(false); setError(null); }}
+                    onClick={() => { setShowAddModal(false); setError(null); resetForm(); }}
                     className="flex-1 px-5 py-3.5 rounded-2xl font-bold text-slate-600 hover:bg-slate-50 border border-slate-200 transition-colors"
                   >
                     Cancelar
@@ -371,9 +410,9 @@ export function UserManagement() {
                     className="flex-[1.5] bg-blue-600 text-white px-5 py-3.5 rounded-2xl font-bold shadow-lg shadow-blue-100 transition-all hover:bg-blue-700 active:scale-[0.98] disabled:opacity-70 flex items-center justify-center gap-2"
                   >
                     {isActionLoading ? (
-                      <><Loader2 className="animate-spin" size={18} /> <span>Creando...</span></>
+                      <><Loader2 className="animate-spin" size={18} /> <span>Guardando...</span></>
                     ) : (
-                      <><Plus size={18} /><span>Crear Usuario</span></>
+                      <><Plus size={18} /><span>{editingUserId ? "Guardar Cambios" : "Crear Usuario"}</span></>
                     )}
                   </button>
                 </div>

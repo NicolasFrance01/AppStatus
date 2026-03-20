@@ -134,7 +134,7 @@ export default function DashboardPage() {
                   )}
                 >
                   <Users size={18} />
-                  <span>Usuarios</span>
+                  <span className="hidden sm:inline">Usuarios</span>
                 </button>
               )}
 
