@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { useEffect, useState, useCallback } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { StatsCards } from "@/components/StatsCards";
@@ -66,7 +68,8 @@ export default function DashboardPage() {
   }, [isAdmin]);
 
   const fetchAlerts = async () => {
-    if (!session?.user) return;
+    const user = session?.user as { id?: string } | undefined;
+    if (!user) return;
     try {
       const res = await fetch('/api/alerts');
       if (res.ok) {

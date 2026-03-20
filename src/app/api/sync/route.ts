@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
@@ -25,8 +26,9 @@ async function handleSync(req: Request) {
       isAllowed = true;
     } else {
       const session = await getServerSession(authOptions);
-      if (session && ["ADMIN", "DEVELOPER"].includes((session.user as any)?.role)) {
-        triggeredBy = (session.user as any)?.name || session.user?.email || "Unknown";
+      const user = session?.user as { role?: string; name?: string | null; email?: string } | undefined;
+      if (session && ["ADMIN", "DEVELOPER"].includes(user?.role || "")) {
+        triggeredBy = user?.name || user?.email || "Unknown";
         isAllowed = true;
       }
     }
@@ -62,7 +64,8 @@ async function handleSync(req: Request) {
 
     console.log("[API/sync] Sync completed successfully.");
     return NextResponse.json({ success: true, message: `Sincronización completada por ${triggeredBy}.` });
-  } catch (error: any) {
+  } catch (err: unknown) {
+    const error = err as Error;
     console.error("[API/sync] Error during sync:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

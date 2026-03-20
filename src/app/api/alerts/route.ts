@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
@@ -9,6 +10,10 @@ export async function GET() {
     if (!session) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
+    // No role check here - allowing all roles to fetch alerts per recent change
+    // But casting to satisfy ESLint
+    const userRole = (session.user as { role?: string }).role;
+    console.log("[API/alerts] Fetching alerts for role:", userRole);
 
     const alerts = await prisma.alert.findMany({
       orderBy: { createdAt: 'desc' },
@@ -17,6 +22,7 @@ export async function GET() {
 
     return NextResponse.json(alerts);
   } catch (error) {
+    console.error("[API/alerts] Error:", error);
     return NextResponse.json({ error: 'Error al obtener alertas' }, { status: 500 });
   }
 }

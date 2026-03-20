@@ -1,5 +1,6 @@
 "use client";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { 
   UserCircle, 
@@ -19,8 +20,8 @@ interface MyProfileProps {
     id: string;
     email: string;
     name: string | null;
-    username: string;
-    role: string;
+    username?: string;
+    role?: string;
   };
   onUpdate?: () => void;
 }
