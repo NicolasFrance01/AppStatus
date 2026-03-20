@@ -3,6 +3,7 @@ import prisma from "../db";
 import { sendNotification } from "../notifications";
 import { fetchAppleAppStatus } from "./apple";
 import { fetchGoogleAppStatus } from "./google";
+import { sendStatusAlertEmail } from "../email";
 
 export async function syncAppStatus(appId: string) {
   const app = await prisma.app.findUnique({ where: { id: appId } });
@@ -66,6 +67,22 @@ export async function syncAppStatus(appId: string) {
         }
       })
     ]);
+
+    // Create System Alert
+    await prisma.alert.create({
+      data: {
+        type: 'STATUS_CHANGE',
+        message: `La app ${app.name} cambió de ${oldStatus} a ${newStatus}`,
+        metadata: { appId, oldStatus, newStatus, appName: app.name }
+      }
+    });
+
+    // Send Email to Admins
+    const admins = await prisma.user.findMany({ where: { role: 'ADMIN' } });
+    const adminEmails = admins.map(a => a.email);
+    if (adminEmails.length > 0) {
+      await sendStatusAlertEmail(adminEmails, app.name, oldStatus, newStatus);
+    }
 
     await sendNotification(app.name, oldStatus, newStatus);
   }

@@ -5,11 +5,11 @@ import { useSession, signOut } from "next-auth/react";
 import { StatsCards } from "@/components/StatsCards";
 import { AppTable } from "@/components/AppTable";
 import { SummaryView } from "@/components/SummaryView";
-import { RefreshCw, LogOut, Users, Loader2, LayoutDashboard } from "lucide-react";
+import { RefreshCw, LogOut, Users, Loader2, LayoutDashboard, UserCircle, History, X, Bell, CheckCircle2, AlertCircle as AlertIcon, Send } from "lucide-react";
 import { App } from "@/generated/client";
 import { cn, formatRelativeTime } from "@/lib/utils";
 import { UserManagement } from "@/components/UserManagement";
-import { History, X } from "lucide-react";
+import { MyProfile } from "@/components/MyProfile";
 
 export default function DashboardPage() {
   const { data: session } = useSession();
@@ -22,8 +22,10 @@ export default function DashboardPage() {
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [bankFilter, setBankFilter] = useState<string>("all");
   const [showSummary, setShowSummary] = useState(false);
-  const [view, setView] = useState<"dashboard" | "users">("dashboard");
+  const [view, setView] = useState<"dashboard" | "users" | "profile">("dashboard");
   const [isSyncing, setIsSyncing] = useState(false);
+  const [alerts, setAlerts] = useState<any[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
   const [syncInfo, setSyncInfo] = useState<any>(null);
   const [showHistory, setShowHistory] = useState(false);
@@ -63,10 +65,54 @@ export default function DashboardPage() {
     }
   }, [isAdmin]);
 
+  const fetchAlerts = async () => {
+    if ((session?.user as any)?.role !== 'ADMIN') return;
+    try {
+      const res = await fetch('/api/alerts');
+      if (res.ok) {
+        const data = await res.json();
+        setAlerts(data);
+      }
+    } catch (e) {
+      console.error("Error fetching alerts:", e);
+    }
+  };
+
+  const markAlertAsRead = async (id: string) => {
+    try {
+      await fetch('/api/alerts', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, isRead: true })
+      });
+      fetchAlerts();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    try {
+      await fetch('/api/alerts', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: 'all', isRead: true })
+      });
+      fetchAlerts();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const unreadCount = alerts.filter(a => !a.isRead).length;
+
   useEffect(() => {
     loadApps();
     loadSyncInfo();
-  }, [loadApps, loadSyncInfo]);
+    fetchAlerts();
+    const interval = setInterval(fetchAlerts, 60000);
+    return () => clearInterval(interval);
+  }, [loadApps, loadSyncInfo, session]);
 
   // Poll sync status if syncing
   useEffect(() => {
@@ -121,7 +167,10 @@ export default function DashboardPage() {
             <div className="flex items-center gap-2 min-w-0">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/logo.png" alt="AppStatus Logo" width={36} height={36} className="drop-shadow shrink-0" />
-              <span className="text-base sm:text-xl font-bold tracking-tight text-slate-900 truncate">GP-Pasajes AppStatus</span>
+              <span className="text-sm sm:text-lg font-bold tracking-tighter sm:tracking-tight text-slate-900 truncate">
+                <span className="sm:hidden">AppStatus</span>
+                <span className="hidden sm:inline">GP-Pasajes AppStatus</span>
+              </span>
             </div>
             
             <div className="flex items-center gap-3">
@@ -145,12 +194,90 @@ export default function DashboardPage() {
                   <span className="text-xs font-bold text-slate-900 leading-none">{session?.user?.name || "User"}</span>
                   <span className="text-[10px] text-slate-500 font-medium uppercase tracking-tighter">{userRole}</span>
                 </div>
+                
+                {userRole === "ADMIN" && (
+                  <div className="relative">
+                    <button 
+                      onClick={() => setShowNotifications(!showNotifications)}
+                      className={cn(
+                        "p-2 rounded-xl transition-all relative",
+                        showNotifications ? "bg-slate-100 text-slate-900" : "text-slate-400 hover:text-slate-900 hover:bg-slate-50"
+                      )}
+                    >
+                      <Bell size={20} />
+                      {unreadCount > 0 && (
+                        <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-rose-500 text-white text-[10px] font-black rounded-full flex items-center justify-center ring-2 ring-white">
+                          {unreadCount > 9 ? '9+' : unreadCount}
+                        </span>
+                      )}
+                    </button>
+
+                    {showNotifications && (
+                      <div className="absolute right-0 mt-3 w-80 bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden z-[100] animate-in slide-in-from-top-2 duration-200">
+                        <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                          <h4 className="font-black text-slate-900 text-sm">Notificaciones</h4>
+                          {unreadCount > 0 && (
+                            <button onClick={markAllAsRead} className="text-[10px] font-bold text-blue-600 hover:underline">Marcar todas</button>
+                          )}
+                        </div>
+                        <div className="max-h-96 overflow-y-auto">
+                          {alerts.length === 0 ? (
+                            <div className="p-8 text-center">
+                              <Bell size={24} className="mx-auto text-slate-200 mb-2" />
+                              <p className="text-xs text-slate-400 font-medium">No hay alertas nuevas</p>
+                            </div>
+                          ) : (
+                            alerts.map((alert) => (
+                              <div 
+                                key={alert.id} 
+                                onClick={() => !alert.isRead && markAlertAsRead(alert.id)}
+                                className={cn(
+                                  "p-4 border-b border-slate-50 cursor-pointer transition-colors hover:bg-slate-50",
+                                  !alert.isRead && "bg-blue-50/30"
+                                )}
+                              >
+                                <div className="flex gap-3">
+                                  <div className={cn(
+                                    "h-8 w-8 shrink-0 rounded-full flex items-center justify-center",
+                                    alert.type === 'STATUS_CHANGE' ? "bg-emerald-100 text-emerald-600" : "bg-rose-100 text-rose-600"
+                                  )}>
+                                    {alert.type === 'STATUS_CHANGE' ? <CheckCircle2 size={16} /> : <AlertIcon size={16} />}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-[13px] font-bold text-slate-800 leading-tight">{alert.message}</p>
+                                    <p className="text-[10px] text-slate-400 mt-1 font-medium italic">
+                                      {new Date(alert.createdAt).toLocaleString()}
+                                    </p>
+                                  </div>
+                                  {!alert.isRead && <div className="w-2 h-2 bg-blue-500 rounded-full shrink-0 self-center" />}
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <button 
-                  onClick={() => signOut()}
-                  className="text-slate-400 hover:text-rose-600 transition-colors"
-                  title="Cerrar Sesión"
+                  onClick={() => setView(view === "profile" ? "dashboard" : "profile")}
+                  className={cn(
+                    "inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all ml-1",
+                    view === "profile" ? "bg-blue-50 text-blue-700" : "text-slate-600 hover:bg-slate-50"
+                  )}
+                  title="Mi Perfil"
+                >
+                  <UserCircle size={18} />
+                  <span className="hidden sm:inline">Mi Perfil</span>
+                </button>
+
+                <button 
+                  onClick={() => signOut({ callbackUrl: "/login" })}
+                  className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-rose-600 hover:bg-rose-50 transition-all ml-1"
                 >
                   <LogOut size={18} />
+                  <span className="hidden sm:inline">Salir</span>
                 </button>
               </div>
             </div>

@@ -13,15 +13,20 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: "credentials",
       credentials: {
-        email: { label: "Email", type: "email" },
+        username: { label: "Username", type: "text" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
+        if (!credentials?.username || !credentials?.password) {
           throw new Error("Credenciales incompletas.");
         }
         
-        console.log("[Auth] Attempting login for:", credentials.email);
+        // Remove @ if user typed it
+        const normalizedUsername = credentials.username.startsWith('@') 
+          ? credentials.username 
+          : `@${credentials.username}`;
+
+        console.log("[Auth] Attempting login for:", normalizedUsername);
         
         if (!localPrisma.user) {
           console.error("[Auth] User model is MISSING in localPrisma instance!");
@@ -29,11 +34,11 @@ export const authOptions: NextAuthOptions = {
         }
 
         const user = await localPrisma.user.findUnique({
-          where: { email: credentials?.email },
+          where: { username: normalizedUsername },
         });
 
         if (!user || !user.password) {
-          throw new Error("Invalid credentials");
+          throw new Error("Usuario o contraseña incorrectos");
         }
 
         const isPasswordCorrect = await bcrypt.compare(
@@ -42,12 +47,17 @@ export const authOptions: NextAuthOptions = {
         );
 
         if (!isPasswordCorrect) {
-          throw new Error("Invalid credentials");
+          throw new Error("Usuario o contraseña incorrectos");
+        }
+        
+        if (user.passwordExpiresAt && new Date(user.passwordExpiresAt) < new Date()) {
+          throw new Error("Contraseña expirada. Contacte al administrador.");
         }
 
         return {
           id: user.id,
           email: user.email,
+          username: user.username,
           name: user.name,
           role: user.role,
         };

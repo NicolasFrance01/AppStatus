@@ -26,9 +26,12 @@ import { Role } from "@/generated/client";
 interface User {
   id: string;
   email: string;
+  username: string;
   name: string | null;
   role: Role;
   createdAt: Date;
+  passwordExpiresAt: Date | null;
+  mustChangePassword: boolean;
 }
 
 export function UserManagement() {
@@ -44,6 +47,7 @@ export function UserManagement() {
 
   // Form state
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<Role>("READER");
@@ -70,11 +74,11 @@ export function UserManagement() {
     setError(null);
     try {
       if (editingUserId) {
-        await updateUser(editingUserId, { email, name, password, role });
+        await updateUser(editingUserId, { email, name, username, password, role });
         setSuccess("Usuario actualizado correctamente.");
       } else {
-        await createUser({ email, name, password, role });
-        setSuccess("Usuario creado correctamente.");
+        await createUser({ email, name, username, password, role });
+        setSuccess("Usuario creado y email enviado.");
       }
       setShowAddModal(false);
       resetForm();
@@ -118,6 +122,7 @@ export function UserManagement() {
   const openEditModal = (user: User) => {
     setEditingUserId(user.id);
     setEmail(user.email);
+    setUsername(user.username.replace(/^@/, ''));
     setName(user.name || "");
     setPassword(""); 
     setRole(user.role);
@@ -133,10 +138,25 @@ export function UserManagement() {
 
   const resetForm = () => {
     setEmail("");
+    setUsername("");
     setName("");
     setPassword("");
     setRole("READER");
     setEditingUserId(null);
+  };
+
+  const getTimeRemaining = (expiryDate: Date | null, mustChange: boolean) => {
+    if (!expiryDate || !mustChange) return null;
+    const now = new Date();
+    const expiry = new Date(expiryDate);
+    const diff = expiry.getTime() - now.getTime();
+    
+    if (diff <= 0) return "Expirada";
+    
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    
+    return `${hours}h ${mins}m`;
   };
 
   useEffect(() => {
@@ -193,7 +213,8 @@ export function UserManagement() {
             <thead>
               <tr className="bg-slate-50/50 border-b border-slate-200">
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Usuario</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Email</th>
+                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Username / Email</th>
+                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Clave Temporal</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Rol de Acceso</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-right">Acciones</th>
               </tr>
@@ -257,7 +278,30 @@ export function UserManagement() {
                           <span className="font-bold text-slate-900">{user.name || "—"}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-slate-600 font-medium">{user.email}</td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col">
+                          <span className="font-bold text-blue-600 text-sm">{user.username}</span>
+                          <span className="text-slate-400 text-xs">{user.email}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        {user.mustChangePassword ? (
+                          <div className={cn(
+                            "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-tight",
+                            getTimeRemaining(user.passwordExpiresAt, true) === "Expirada" 
+                              ? "bg-rose-50 text-rose-600 border border-rose-100" 
+                              : "bg-amber-50 text-amber-600 border border-amber-100"
+                          )}>
+                            <Loader2 size={10} className={cn(getTimeRemaining(user.passwordExpiresAt, true) !== "Expirada" && "animate-spin")} />
+                            {getTimeRemaining(user.passwordExpiresAt, true)}
+                          </div>
+                        ) : (
+                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 text-[11px] font-bold uppercase tracking-tight">
+                            <CheckCircle2 size={10} />
+                            Establecida
+                          </div>
+                        )}
+                      </td>
                       <td className="px-6 py-4">
                         <select
                           value={user.role}
@@ -354,6 +398,20 @@ export function UserManagement() {
                       className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
                       placeholder="usuario@algeiba.com"
                     />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Usuario (@)</label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">@</span>
+                      <input
+                        type="text"
+                        required
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value.replace(/^@/, ''))}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 pl-8 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
+                        placeholder="nfrance"
+                      />
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Contraseña</label>

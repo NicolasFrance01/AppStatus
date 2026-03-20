@@ -47,5 +47,4 @@ next-env.d.ts
 !postcss.config.mjs
 !next.config.mjs
 !next-auth.mjs
-!.next
 !prisma/seed-admin.mjs
