@@ -1,0 +1,14 @@
+name: Sync Check Heartbeat
+
+on:
+  schedule:
+    - cron: '*/15 * * * *' # Runs every 15 minutes
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  ping-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Sync API
+        run: |
+          curl -X GET "https://app-status-lbmw6tj7k-nicofrances-projects.vercel.app/api/sync?task=true"
