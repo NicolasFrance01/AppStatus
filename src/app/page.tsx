@@ -66,7 +66,7 @@ export default function DashboardPage() {
   }, [isAdmin]);
 
   const fetchAlerts = async () => {
-    if ((session?.user as any)?.role !== 'ADMIN') return;
+    if (!session?.user) return;
     try {
       const res = await fetch('/api/alerts');
       if (res.ok) {
@@ -190,12 +190,12 @@ export default function DashboardPage() {
               <div className="h-6 w-px bg-slate-200 mx-1" />
 
               <div className="flex items-center gap-3 bg-slate-100/50 rounded-full px-4 py-1.5 border border-slate-200">
-                <div className="flex flex-col items-end">
+                <div className="flex flex-col items-end mr-1">
                   <span className="text-xs font-bold text-slate-900 leading-none">{session?.user?.name || "User"}</span>
                   <span className="text-[10px] text-slate-500 font-medium uppercase tracking-tighter">{userRole}</span>
                 </div>
                 
-                {userRole === "ADMIN" && (
+                {session && (
                   <div className="relative">
                     <button 
                       onClick={() => setShowNotifications(!showNotifications)}
