@@ -118,10 +118,10 @@ export default function DashboardPage() {
       <nav className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/80 backdrop-blur-md">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 min-w-0">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.png" alt="AppStatus Logo" width={36} height={36} className="drop-shadow" />
-              <span className="text-xl font-bold tracking-tight text-slate-900">GP-Pasajes AppStatus</span>
+              <img src="/logo.png" alt="AppStatus Logo" width={36} height={36} className="drop-shadow shrink-0" />
+              <span className="text-base sm:text-xl font-bold tracking-tight text-slate-900 truncate">GP-Pasajes AppStatus</span>
             </div>
             
             <div className="flex items-center gap-3">
