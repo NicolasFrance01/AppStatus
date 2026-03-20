@@ -344,7 +344,7 @@ export default function DashboardPage() {
                   <div className={cn("h-2 w-2 rounded-full", isSyncing ? "bg-amber-400 animate-pulse" : "bg-emerald-400")} />
                   <span>
                     Ultima actualización {formatRelativeTime(syncInfo.completedAt || syncInfo.startedAt)}
-                    {!isReader && syncInfo.triggeredBy && ` por ${syncInfo.triggeredBy}`}
+                    {syncInfo.triggeredBy && (syncInfo.triggeredBy === 'Automatizado' || !isReader) && ` por ${syncInfo.triggeredBy}`}
                   </span>
                   {syncMessage && (
                     <span className="ml-2 font-bold text-blue-600 animate-in fade-in duration-300">{syncMessage}</span>

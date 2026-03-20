@@ -4,29 +4,48 @@ import { authOptions } from "@/lib/auth";
 import { syncAllApps } from "@/lib/sync/engine";
 import prisma from "@/lib/db";
 
-export async function POST() {
-  try {
-    const session = await getServerSession(authOptions);
-    const userRole = (session?.user as any)?.role;
-    const userName = session?.user?.name || session?.user?.email || "Unknown";
+export async function GET(req: Request) {
+  return handleSync(req);
+}
 
-    if (!session || !["ADMIN", "DEVELOPER"].includes(userRole)) {
+export async function POST(req: Request) {
+  return handleSync(req);
+}
+
+async function handleSync(req: Request) {
+  try {
+    const authHeader = req.headers.get('Authorization');
+    const isCron = authHeader === `Bearer ${process.env.CRON_SECRET}`;
+    
+    let triggeredBy = "Unknown";
+    let isAllowed = false;
+
+    if (isCron) {
+      triggeredBy = "Automatizado";
+      isAllowed = true;
+    } else {
+      const session = await getServerSession(authOptions);
+      if (session && ["ADMIN", "DEVELOPER"].includes((session.user as any)?.role)) {
+        triggeredBy = (session.user as any)?.name || session.user?.email || "Unknown";
+        isAllowed = true;
+      }
+    }
+
+    if (!isAllowed) {
       return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 
     // Create history record
     const history = await prisma.syncHistory.create({
       data: {
-        triggeredBy: userName,
-        totalApps: 0, // Will be updated in syncAllApps
+        triggeredBy: triggeredBy,
+        totalApps: 0, 
         status: "IN_PROGRESS"
       }
     });
 
-    console.log("[API/sync] Starting full sync triggered by:", userName);
+    console.log(`[API/sync] Starting full sync triggered by: ${triggeredBy}`);
     
-    // Trigger sync in background or wait depending on requirements
-    // For now, we wait to ensure complete response, but progress is tracked in DB
     try {
       await syncAllApps(history.id);
     } catch (syncError: any) {
@@ -42,8 +61,7 @@ export async function POST() {
     }
 
     console.log("[API/sync] Sync completed successfully.");
-
-    return NextResponse.json({ success: true, message: "Sincronización completada." });
+    return NextResponse.json({ success: true, message: `Sincronización completada por ${triggeredBy}.` });
   } catch (error: any) {
     console.error("[API/sync] Error during sync:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
