@@ -404,6 +404,10 @@ export default function DashboardPage() {
               )}
             </div>
           </>
+        ) : view === "profile" ? (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+             <MyProfile user={session?.user as any} onUpdate={() => setView("dashboard")} />
+          </div>
         ) : (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
              <UserManagement />
