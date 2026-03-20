@@ -8,8 +8,8 @@ import { SummaryView } from "@/components/SummaryView";
 import { RefreshCw, LogOut, Users, Loader2, LayoutDashboard, UserCircle, History, X, Bell, CheckCircle2, AlertCircle as AlertIcon, Send } from "lucide-react";
 import { App } from "@/generated/client";
 import { cn, formatRelativeTime } from "@/lib/utils";
-import { UserManagement } from "@/components/UserManagement";
-import { MyProfile } from "@/components/MyProfile";
+import { UserManagement } from "../components/UserManagement";
+import MyProfile from "../components/MyProfile";
 
 export default function DashboardPage() {
   const { data: session } = useSession();

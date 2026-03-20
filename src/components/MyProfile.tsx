@@ -25,7 +25,7 @@ interface MyProfileProps {
   onUpdate?: () => void;
 }
 
-export function MyProfile({ user, onUpdate }: MyProfileProps) {
+function MyProfile({ user, onUpdate }: MyProfileProps) {
   const [email, setEmail] = useState(user.email);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -189,3 +189,5 @@ export function MyProfile({ user, onUpdate }: MyProfileProps) {
     </div>
   );
 }
+
+export default MyProfile;
