@@ -28,7 +28,7 @@ async function tryFetchWithAccount(packageName: string, jsonString: string) {
 }
 
 // Maps Google Play track status to our internal AppStatus and detailed labels
-function mapGoogleStatus(tracks: any[]) {
+function mapGoogleStatus(tracks: any[]): { status: AppStatus; storeStatus: string; updateStatus: string } {
   if (!tracks || tracks.length === 0) {
     return {
       status: AppStatus.PENDING_REVIEW,
@@ -83,8 +83,14 @@ function mapGoogleStatus(tracks: any[]) {
 
 async function getStoreVersion(packageName: string) {
   try {
-    const r = await fetch(`https://play.google.com/store/apps/details?id=${packageName}&hl=es-419`);
+    const r = await fetch(`https://play.google.com/store/apps/details?id=${packageName}&hl=es-419&gl=AR&nocache=${Date.now()}`);
     const html = await r.text();
+    
+    // Try JSON-LD first (more reliable)
+    const ldMatch = html.match(/"softwareVersion"\s*:\s*"([\d\.]+)"/);
+    if (ldMatch) return ldMatch[1];
+
+    // Fallback to deeper metadata match
     const m = html.match(/\[\[\["([\d\.]+)"\]/);
     return m ? m[1] : null;
   } catch (e) { return null; }
@@ -112,7 +118,8 @@ export async function fetchGoogleAppStatus(packageName: string) {
       const { tracks } = await tryFetchWithAccount(packageName, json);
 
       const statusInfo = mapGoogleStatus(tracks);
-      const mainRel = tracks.find((t: any) => t.track === 'production' || t.track === 'beta')?.releases?.[0];
+      const productionTrack = tracks.find((t: any) => t.track === 'production');
+      const mainRel = (productionTrack || tracks.find((t: any) => t.track === 'beta'))?.releases?.[0];
       const apiVersion = mainRel?.name ?? 'N/A';
       const build = mainRel?.versionCodes?.[0]?.toString() ?? 'N/A';
 
@@ -120,14 +127,17 @@ export async function fetchGoogleAppStatus(packageName: string) {
       let finalUpdateLabel = statusInfo.updateStatus;
 
       // Managed Publishing Heuristic:
-      // If API says completed but store version is different (older), it's "Ready to publish" or "In Review"
-      if (statusInfo.status === AppStatus.PUBLISHED) {
+      // If Production API says completed but store version is different (older), 
+      // it's "Ready to publish" or "In Review".
+      // ONLY apply to Production to avoid confusing Beta updates.
+      if (statusInfo.status === AppStatus.PUBLISHED && productionTrack) {
         const storeVersion = await getStoreVersion(packageName);
         if (storeVersion && storeVersion !== apiVersion) {
-          // Since we can't differenciate "In Review" and "Approved" via API when Managed Publishing is ON,
-          // we use a more descriptive status and label.
-          finalStatus = AppStatus.IN_REVIEW; 
-          finalUpdateLabel = 'En revisión / Pendiente (Envío gestionado)';
+          // Since we can't differentiate "In Review" and "Approved" via API when Managed Publishing is ON,
+          // we use PENDING_PUBLICATION as it's what the user expects for approved apps, 
+          // but with a label that mentions both possibilities.
+          finalStatus = AppStatus.PENDING_PUBLICATION; 
+          finalUpdateLabel = 'En revisión / Listo para publicar';
           console.log(`[Google] Managed Publishing detected for ${packageName}: Store(${storeVersion}) vs API(${apiVersion})`);
         }
       }
