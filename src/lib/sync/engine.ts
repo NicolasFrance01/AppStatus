@@ -12,6 +12,8 @@ export async function syncAppStatus(appId: string) {
   let newStatus: AppStatus = app.status;
   let newVersion: string | null = app.currentVersion;
   let newBuild: string | null = app.buildNumber;
+  let newStoreStatus: string | null = app.storeStatus;
+  let newUpdateStatus: string | null = app.updateStatus;
 
   // Real Integration for Apple
   if (app.platform === Platform.IOS && process.env.APPLE_KEY_ID) {
@@ -19,8 +21,10 @@ export async function syncAppStatus(appId: string) {
       console.log(`[Sync] Fetching REAL status for ${app.name} (${app.platform}) from Apple...`);
       const appleResult = await fetchAppleAppStatus(app.bundleId);
       newStatus = appleResult.status;
-      newVersion = appleResult.version;
-      newBuild = appleResult.build;
+      newVersion = appleResult.version ?? null;
+      newBuild = appleResult.build ?? null;
+      newStoreStatus = appleResult.storeStatus ?? null;
+      newUpdateStatus = appleResult.updateStatus ?? null;
     } catch (error) {
       console.error(`[Sync] Error fetching from Apple for ${app.name}:`, error);
       return;
@@ -30,8 +34,10 @@ export async function syncAppStatus(appId: string) {
       console.log(`[Sync] Fetching REAL status for ${app.name} (${app.platform}) from Google Play...`);
       const googleResult = await fetchGoogleAppStatus(app.bundleId);
       newStatus = googleResult.status;
-      newVersion = googleResult.version;
-      newBuild = googleResult.build;
+      newVersion = googleResult.version ?? null;
+      newBuild = googleResult.build ?? null;
+      newStoreStatus = googleResult.storeStatus ?? null;
+      newUpdateStatus = googleResult.updateStatus ?? null;
     } catch (error) {
       console.error(`[Sync] Error fetching from Google for ${app.name}:`, error);
       return;
@@ -46,7 +52,13 @@ export async function syncAppStatus(appId: string) {
     }
   }
   
-  if (newStatus !== app.status || newVersion !== app.currentVersion) {
+  if (
+    newStatus !== app.status || 
+    newVersion !== app.currentVersion || 
+    newBuild !== app.buildNumber ||
+    newStoreStatus !== app.storeStatus ||
+    newUpdateStatus !== app.updateStatus
+  ) {
     const oldStatus = app.status;
     
     await prisma.$transaction([
@@ -56,6 +68,8 @@ export async function syncAppStatus(appId: string) {
           status: newStatus, 
           currentVersion: newVersion,
           buildNumber: newBuild,
+          storeStatus: newStoreStatus,
+          updateStatus: newUpdateStatus,
           lastUpdate: new Date() 
         }
       }),
