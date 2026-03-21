@@ -91,7 +91,7 @@ export default function LoginPage() {
             </div>
             <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">Bienvenido</h1>
             <p className="text-slate-500 mt-2 text-center text-sm">
-              Inicia sesión en <strong>GP-Pasajes AppStatus</strong>
+              Inicia sesión en <strong>GP App Status</strong>
             </p>
           </div>
 

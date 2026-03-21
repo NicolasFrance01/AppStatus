@@ -1,9 +1,9 @@
-# GP-Pasajes AppStatus: Sistema de Gestión y Monitoreo de Aplicaciones
+# GP App Status: Sistema de Gestión y Monitoreo de Aplicaciones
 
 ## 1. Introducción
 
 ### Descripción General
-GP-Pasajes AppStatus es una plataforma centralizada de monitoreo diseñada para supervisar el ciclo de vida de aplicaciones móviles en las tiendas oficiales de Google Play y Apple App Store. Proporciona una visión en tiempo real de las versiones, builds y estados de aprobación de múltiples aplicaciones distribuidas en diferentes entidades bancarias.
+GP App Status es una plataforma centralizada de monitoreo diseñada para supervisar el ciclo de vida de aplicaciones móviles en las tiendas oficiales de Google Play y Apple App Store. Proporciona una visión en tiempo real de las versiones, builds y estados de aprobación de múltiples aplicaciones distribuidas en diferentes entidades bancarias.
 
 ### Problema que Resuelve
 La gestión manual de decenas de aplicaciones móviles a través de distintas consolas de desarrollador es ineficiente y propensa a errores. La falta de una vista unificada dificulta la detección temprana de rechazos, retrasos en revisiones o desajustes entre versiones de diferentes plataformas (Android vs iOS).
@@ -32,7 +32,7 @@ El sistema se conecta de forma segura a través de Service Accounts y Claves API
 Ideal para empresas con grandes portafolios de aplicaciones móviles, especialmente en el sector fintech o bancario, donde la sincronización multi-entidad es crítica.
 
 ### Diferenciador Competitivo
-A diferencia de herramientas genéricas, GP-Pasajes AppStatus está diseñado para la gestión de "Multi-Entidad", permitiendo agrupar aplicaciones por bancos (Santa Fe, Entre Ríos, San Juan, Santa Cruz) y segmentos (BEE vs HBI) con su branding oficial.
+A diferencia de herramientas genéricas, **GP App Status** está diseñado para la gestión de "Multi-Entidad", permitiendo agrupar aplicaciones por bancos (Santa Fe, Entre Ríos, San Juan, Santa Cruz) y segmentos (BEE vs HBI) con su branding oficial.
 
 ---
 
@@ -102,7 +102,7 @@ El sistema es **Serverless de extremo a extremo**. Esto significa que es capaz d
 
 ## 7. Ventajas Competitivas
 
-| Tradicional / Manual | GP-Pasajes AppStatus |
+| Tradicional / Manual | GP App Status |
 | :--- | :--- |
 | Tiempo de chequeo: 40+ minutos | Tiempo de chequeo: 5 segundos |
 | Reportes desactualizados (Excel) | Datos 100% reales de la API |

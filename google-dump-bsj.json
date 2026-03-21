@@ -1,0 +1,61 @@
+{
+  "edit": {
+    "id": "08011121196126671093",
+    "expiryTimeSeconds": "1773397004"
+  },
+  "tracks": [
+    {
+      "track": "production",
+      "releases": [
+        {
+          "name": "1.95.1",
+          "versionCodes": [
+            "19501"
+          ],
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "track": "beta",
+      "releases": [
+        {
+          "status": "draft"
+        },
+        {
+          "name": "1.0.0.5",
+          "versionCodes": [
+            "10000"
+          ],
+          "releaseNotes": [
+            {
+              "language": "es-419",
+              "text": "Accedé a la banca móvil del Banco San Juan"
+            }
+          ],
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "track": "alpha"
+    },
+    {
+      "track": "internal",
+      "releases": [
+        {
+          "name": "1.95.1",
+          "versionCodes": [
+            "19501"
+          ],
+          "status": "completed"
+        }
+      ]
+    }
+  ],
+  "details": {
+    "defaultLanguage": "es-419",
+    "contactWebsite": "https://www.bancosanjuan.com/",
+    "contactEmail": "atencionaclientes@bancosanjuan.com"
+  }
+}

@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "GP-Pasajes AppStatus",
-  description: "Sistema de monitoreo de aplicaciones móviles - Algeiba",
+  title: "GP App Status",
+  description: "Monitoreo y Gestión de Aplicaciones Móviles - Algeiba",
   icons: {
     icon: "/logo.png",
     apple: "/logo.png",

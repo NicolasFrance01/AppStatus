@@ -203,7 +203,7 @@ export default function DashboardPage() {
               <img src="/logo.png" alt="AppStatus Logo" width={36} height={36} className="drop-shadow shrink-0" />
               <span className="text-sm sm:text-lg font-bold tracking-tighter sm:tracking-tight text-slate-900 truncate">
                 <span className="sm:hidden">AppStatus</span>
-                <span className="hidden sm:inline">GP-Pasajes AppStatus</span>
+                <span className="hidden sm:inline">GP App Status</span>
               </span>
             </div>
             

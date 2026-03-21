@@ -1,0 +1,53 @@
+--- ALL APPLE APPS ---
+
+Account: BSJ - Main
+  - [com.bancosanjuan.mobile] APP Banco San Juan
+  - [com.empresasbsj.mobile] BSJ Empresas
+  - [ar.com.bancobsj.bsjmovil] BSJ Móvil
+  - [ar.com.bancobsj.4u] 4U BSJ
+
+Account: BSJ - BEE
+  - [com.bancosanjuan.mobile] APP Banco San Juan
+  - [com.empresasbsj.mobile] BSJ Empresas
+  - [ar.com.bancobsj.bsjmovil] BSJ Móvil
+  - [ar.com.bancobsj.4u] 4U BSJ
+
+Account: BSF - BI
+  - [com.empresasbsf.mobile] SF Empresas
+  - [com.bancosantafe.mobile] APP Banco Santa Fe
+  - [ar.com.bancobsf.nbsfmovil] Santa Fe Móvil
+  - [ar.com.bancobsf.4u] 4U BSF
+
+Account: BSF - BEE
+  - [com.empresasbsf.mobile] SF Empresas
+  - [com.bancosantafe.mobile] APP Banco Santa Fe
+  - [ar.com.bancobsf.nbsfmovil] Santa Fe Móvil
+  - [ar.com.bancobsf.4u] 4U BSF
+
+Account: BER - BI
+  - [com.bancoentrerios.mobile] APP Banco Entre Ríos
+  - [com.empresasbersa.mobile] BER Empresas
+  - [ar.com.bancober.nbermovil] BER Móvil
+  - [ar.com.bancober.4u] 4U BER
+
+Account: BER - BEE
+  - [com.bancoentrerios.mobile] APP Banco Entre Ríos
+  - [com.empresasbersa.mobile] BER Empresas
+  - [ar.com.bancober.nbermovil] BER Móvil
+  - [ar.com.bancober.4u] 4U BER
+
+Account: BSC - BI
+  - [com.bancosantacruz.mobile] APP Banco Santa Cruz
+  - [com.empresasbsc.mobile] BSC Empresas
+  - [ar.com.bancobsc.bscmovil] BSC Móvil
+
+Account: BSC - BEE
+  - [com.bancosantacruz.mobile] APP Banco Santa Cruz
+  - [com.empresasbsc.mobile] BSC Empresas
+  - [ar.com.bancobsc.bscmovil] BSC Móvil
+
+--- TARGET GOOGLE CHECK: com.bancobersa.empresas ---
+  - Not in BSJ: Package not found: com.bancobersa.empresas.
+  - Not in BSF: Package not found: com.bancobersa.empresas.
+  - Not in BER: Package not found: com.bancobersa.empresas.
+  - Not in BSC: Package not found: com.bancobersa.empresas.

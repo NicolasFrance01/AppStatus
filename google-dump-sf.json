@@ -1,0 +1,57 @@
+{
+  "edit": {
+    "id": "05966142201430788614",
+    "expiryTimeSeconds": "1773396875"
+  },
+  "tracks": [
+    {
+      "track": "production",
+      "releases": [
+        {
+          "name": "2.69.0",
+          "versionCodes": [
+            "26900"
+          ],
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "track": "beta",
+      "releases": [
+        {
+          "name": "23219 (2.32.19)",
+          "versionCodes": [
+            "23219"
+          ],
+          "releaseNotes": [
+            {
+              "language": "es-419",
+              "text": "Accede a la App de Banco Santa Fe "
+            }
+          ],
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "track": "alpha"
+    },
+    {
+      "track": "internal",
+      "releases": [
+        {
+          "name": "2.69.0",
+          "versionCodes": [
+            "26900"
+          ],
+          "status": "completed"
+        }
+      ]
+    }
+  ],
+  "details": {
+    "defaultLanguage": "es-419",
+    "contactEmail": "beesoporteamigracion@bancosanjuan.com"
+  }
+}

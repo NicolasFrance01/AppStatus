@@ -1,0 +1,58 @@
+{
+  "edit": {
+    "id": "11788676574955882104",
+    "expiryTimeSeconds": "1773396913"
+  },
+  "tracks": [
+    {
+      "track": "production",
+      "releases": [
+        {
+          "name": "1.95.1",
+          "versionCodes": [
+            "19501"
+          ],
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "track": "beta",
+      "releases": [
+        {
+          "name": "1.87.1",
+          "versionCodes": [
+            "18701"
+          ],
+          "releaseNotes": [
+            {
+              "language": "es-419",
+              "text": "Nueva versión con mejoras y corrección de bugs."
+            }
+          ],
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "track": "alpha"
+    },
+    {
+      "track": "internal",
+      "releases": [
+        {
+          "name": "1.95.1",
+          "versionCodes": [
+            "19501"
+          ],
+          "status": "completed"
+        }
+      ]
+    }
+  ],
+  "details": {
+    "defaultLanguage": "es-419",
+    "contactWebsite": "https://www.bancoentrerios.com.ar",
+    "contactEmail": "info@nuevobersa.com.ar"
+  }
+}
