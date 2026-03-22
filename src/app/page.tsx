@@ -7,7 +7,7 @@ import { useSession, signOut } from "next-auth/react";
 import { StatsCards } from "@/components/StatsCards";
 import { AppTable } from "@/components/AppTable";
 import { SummaryView } from "@/components/SummaryView";
-import { RefreshCw, LogOut, Users, Loader2, LayoutDashboard, UserCircle, History, X, Bell, CheckCircle2, AlertCircle as AlertIcon, Send, Clock } from "lucide-react";
+import { RefreshCw, LogOut, Users, Loader2, LayoutDashboard, UserCircle, History, X, Bell, CheckCircle2, AlertCircle as AlertIcon, Send, Clock, Mail } from "lucide-react";
 import { App } from "@/generated/client";
 import { cn, formatRelativeTime } from "@/lib/utils";
 import { UserManagement } from "../components/UserManagement";
@@ -34,7 +34,7 @@ export default function DashboardPage() {
   const [showHistory, setShowHistory] = useState(false);
   const [syncHistory, setSyncHistory] = useState<any[]>([]);
   const [showConfig, setShowConfig] = useState(false);
-
+  const [showSupportModal, setShowSupportModal] = useState(false);
   // Lazy Sync Engine
   const checkLazySync = useCallback(async (currentSyncInfo: any) => {
     if (!currentSyncInfo) return;
@@ -541,13 +541,47 @@ export default function DashboardPage() {
       <footer className="mt-auto border-t border-slate-200 bg-white py-8">
         <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
           <p className="text-sm text-slate-500">
-            &copy; {new Date().getFullYear()} Sistema de Gestión de Apps Algeiba
+            &copy; {new Date().getFullYear()} Sistema de Gestión de Apps
           </p>
-          <p className="mt-1 text-xs text-slate-400">
-            GP-Pasaje - Algeiba - Nicolas France
-          </p>
+          <button 
+            onClick={() => setShowSupportModal(true)}
+            className="mt-2 text-xs text-blue-600 hover:text-blue-800 hover:underline font-medium transition-colors"
+          >
+            Contactar soporte
+          </button>
         </div>
       </footer>
+
+      {/* Support Modal */}
+      {showSupportModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white rounded-3xl shadow-xl w-full max-w-sm flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="p-6 text-center">
+              <div className="mx-auto w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-4">
+                <Mail size={24} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-2">Soporte by Algeiba</h3>
+              
+              <a 
+                href="mailto:nfrance@algeiba.com?cc=gp.pasajes@algeiba.com&subject=Soporte%20GP%20App%20Status"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors"
+                onClick={() => setShowSupportModal(false)}
+              >
+                <Send size={18} />
+                Enviar correo
+              </a>
+              
+              <button 
+                onClick={() => setShowSupportModal(false)}
+                className="mt-4 w-full px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* System Configuration Modal */}
       {showConfig && (
         <SystemConfig 
