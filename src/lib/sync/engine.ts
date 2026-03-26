@@ -95,7 +95,7 @@ export async function syncAppStatus(appId: string) {
     const admins = await prisma.user.findMany({ where: { role: 'ADMIN' } });
     const adminEmails = admins.map(a => a.email);
     if (adminEmails.length > 0) {
-      await sendStatusAlertEmail(adminEmails, app.name, oldStatus, newStatus);
+      await sendStatusAlertEmail(adminEmails, app.name, oldStatus, newStatus, app.platform, app.entity);
     }
 
     await sendNotification(app.name, oldStatus, newStatus);
