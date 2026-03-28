@@ -1,0 +1,12 @@
+{
+  "projectNumber": "4555542864",
+  "appId": "1:4555542864:android:29778052bea6fb28885c55",
+  "platform": "android",
+  "bundleId": "com.empresasbsf.mobile",
+  "contactEmail": "utn3@accusys.com.ar",
+  "aabCertificate": {
+    "certificateHashSha1": "94:5D:2B:11:1B:12:20:00:BC:05:F0:01:A3:6E:04:88:84:FF:C6:93",
+    "certificateHashSha256": "21:D0:6F:F1:82:75:78:80:CD:C5:FC:37:1F:D8:CB:33:CD:6E:F5:9F:CA:3D:D5:33:7B:E7:F8:F9:3A:60:3E:75",
+    "certificateHashMd5": "45:37:1E:C9:7C:03:6C:AC:3C:6F:16:CF:3E:DA:EE:8C"
+  }
+}

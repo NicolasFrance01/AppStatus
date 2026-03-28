@@ -55,11 +55,25 @@ export default function DashboardPage() {
     }
   }, []);
 
-  const loadApps = useCallback(async () => {
-    const response = await fetch('/api/apps');
+  const loadApps = useCallback(async (forcedFilter?: string | null) => {
+    const activeFilter = forcedFilter !== undefined ? forcedFilter : statusFilter;
+    const url = activeFilter === 'FIREBASE' ? '/api/apps?type=firebase' : '/api/apps';
+    const response = await fetch(url);
     const data = await response.json();
-    setApps(data);
-  }, []);
+    
+    // Normalize data for SummaryView if it's Firebase
+    const normalizedData = activeFilter === 'FIREBASE' 
+      ? data.map((app: any) => ({
+          ...app,
+          segment: app.segment === 'EMPRESAS' ? 'BEE' : app.segment === 'INDIVIDUOS' ? 'HBI' : app.segment,
+          currentVersion: app.releases?.[0]?.version || app.releases?.[0]?.displayVersion || "N/A",
+          buildNumber: app.releases?.[0]?.buildNumber || app.releases?.[0]?.buildVersion || "",
+          status: "ACTION_REQUIRED", // Use a generic status for Firebase for now
+        }))
+      : data;
+
+    setApps(normalizedData);
+  }, [statusFilter]);
 
   const loadSyncInfo = useCallback(async () => {
     const response = await fetch('/api/sync-info');
@@ -181,15 +195,16 @@ export default function DashboardPage() {
   const handleStatusChange = (status: string | null) => {
     setStatusFilter(status);
     setBankFilter("all");
+    loadApps(status);
   };
 
   const stats = {
     total: apps.length,
-    published: apps.filter(a => a.status === 'PUBLISHED').length,
-    inReview: apps.filter(a => a.status === 'IN_REVIEW').length,
-    pendingPublication: apps.filter(a => a.status === 'PENDING_PUBLICATION').length,
-    rejected: apps.filter(a => a.status === 'REJECTED').length,
-    actionRequired: apps.filter(a => a.status === 'ACTION_REQUIRED').length,
+    published: apps.filter(a => (a as any).status === 'PUBLISHED').length,
+    inReview: apps.filter(a => (a as any).status === 'IN_REVIEW').length,
+    pendingPublication: apps.filter(a => (a as any).status === 'PENDING_PUBLICATION').length,
+    rejected: apps.filter(a => (a as any).status === 'REJECTED').length,
+    actionRequired: statusFilter === 'FIREBASE' ? apps.length : 0, // Simplified for now
   };
 
   return (
@@ -203,7 +218,7 @@ export default function DashboardPage() {
               <img src="/logo.png" alt="AppStatus Logo" width={36} height={36} className="drop-shadow shrink-0" />
               <span className="text-sm sm:text-lg font-bold tracking-tighter sm:tracking-tight text-slate-900 truncate">
                 <span className="sm:hidden">AppStatus</span>
-                <span className="hidden sm:inline">GP App Status</span>
+                <span className="hidden sm:inline">App Status</span>
               </span>
             </div>
             
@@ -418,10 +433,10 @@ export default function DashboardPage() {
                   <div className="flex items-center gap-3">
                     <div className="h-8 w-1.5 bg-blue-600 rounded-full" />
                     <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-                      Resumen Ejecutivo
+                      {statusFilter === 'FIREBASE' ? "Resumen Ejecutivo Firebase" : "Resumen Ejecutivo"}
                     </h2>
                   </div>
-                  <SummaryView apps={apps} />
+                  <SummaryView apps={apps} isFirebase={statusFilter === 'FIREBASE'} />
                 </div>
               )}
               
@@ -429,7 +444,9 @@ export default function DashboardPage() {
                 <div className="space-y-5">
                   <div className="flex items-center justify-between">
                     <h2 className="text-xl font-bold text-slate-900 tracking-tight">
-                      {statusFilter ? `${statusFilter.replace('_', ' ')} Applications` : 'Todas las Aplicaciones'}
+                      {statusFilter === 'FIREBASE' 
+                        ? 'Todas las Aplicaciones Firebase' 
+                        : (statusFilter ? `${statusFilter.replace('_', ' ')} Applications` : 'Todas las Aplicaciones')}
                     </h2>
                   </div>
                   <AppTable 

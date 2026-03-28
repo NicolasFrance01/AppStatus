@@ -1,0 +1,78 @@
+{
+  "android": [
+    {
+      "name": "projects/banco-santa-fe/androidApps/1:4555542864:android:29778052bea6fb28885c55",
+      "appId": "1:4555542864:android:29778052bea6fb28885c55",
+      "displayName": "BSF Banca Empresas",
+      "projectId": "banco-santa-fe",
+      "packageName": "com.empresasbsf.mobile",
+      "apiKeyId": "5459b890-2a5a-42e4-afaf-a3466bce9a11",
+      "state": "ACTIVE",
+      "expireTime": "1970-01-01T00:00:00Z",
+      "etag": "1_ac435fa2-586b-4f3e-9ea1-c8aacaa2eb24"
+    },
+    {
+      "name": "projects/banco-santa-fe/androidApps/1:4555542864:android:91bbcd65c325ded3885c55",
+      "appId": "1:4555542864:android:91bbcd65c325ded3885c55",
+      "displayName": "BSF Banca Empresas UAT",
+      "projectId": "banco-santa-fe",
+      "packageName": "com.empresasbsf.uat",
+      "apiKeyId": "5459b890-2a5a-42e4-afaf-a3466bce9a11",
+      "state": "ACTIVE",
+      "expireTime": "1970-01-01T00:00:00Z",
+      "etag": "1_ffa13c0c-84a3-458a-a84b-04d2a7e61831"
+    },
+    {
+      "name": "projects/banco-santa-fe/androidApps/1:4555542864:android:e5868b610801cd9e885c55",
+      "appId": "1:4555542864:android:e5868b610801cd9e885c55",
+      "displayName": "BSF Banca Individuos",
+      "projectId": "banco-santa-fe",
+      "packageName": "com.bancosantafe.mobile",
+      "apiKeyId": "5459b890-2a5a-42e4-afaf-a3466bce9a11",
+      "state": "ACTIVE",
+      "expireTime": "1970-01-01T00:00:00Z",
+      "etag": "1_635bc638-4adb-45cf-a583-188e8f70e9d2"
+    }
+  ],
+  "ios": [
+    {
+      "name": "projects/banco-santa-fe/iosApps/1:4555542864:ios:69290e4ed33465df885c55",
+      "appId": "1:4555542864:ios:69290e4ed33465df885c55",
+      "displayName": "BSF Banca Empresas UAT",
+      "projectId": "banco-santa-fe",
+      "bundleId": "com.empresasbsf.uat",
+      "appStoreId": "6444109323",
+      "teamId": "GA29M98D33",
+      "apiKeyId": "90023361-53f0-4c6a-917c-63f50e774b57",
+      "state": "ACTIVE",
+      "expireTime": "1970-01-01T00:00:00Z",
+      "etag": "1_126a1698-a835-4534-81e5-f5c6f60be688"
+    },
+    {
+      "name": "projects/banco-santa-fe/iosApps/1:4555542864:ios:be3f2f73a67a9d86885c55",
+      "appId": "1:4555542864:ios:be3f2f73a67a9d86885c55",
+      "displayName": "BSF Banca Empresas",
+      "projectId": "banco-santa-fe",
+      "bundleId": "com.empresasbsf.mobile",
+      "appStoreId": "6444109323",
+      "teamId": "GA29M98D33",
+      "apiKeyId": "90023361-53f0-4c6a-917c-63f50e774b57",
+      "state": "ACTIVE",
+      "expireTime": "1970-01-01T00:00:00Z",
+      "etag": "1_7ee8f290-7289-48ad-b4b4-bd4a2473ef17"
+    },
+    {
+      "name": "projects/banco-santa-fe/iosApps/1:4555542864:ios:ffa788670590de79885c55",
+      "appId": "1:4555542864:ios:ffa788670590de79885c55",
+      "displayName": "BSF Banca Individuos",
+      "projectId": "banco-santa-fe",
+      "bundleId": "com.bancosantafe.mobile",
+      "appStoreId": "1516538881",
+      "teamId": "GA29M98D33",
+      "apiKeyId": "90023361-53f0-4c6a-917c-63f50e774b57",
+      "state": "ACTIVE",
+      "expireTime": "1970-01-01T00:00:00Z",
+      "etag": "1_2d16a242-cdab-4677-bfb6-72c0d356dfc5"
+    }
+  ]
+}

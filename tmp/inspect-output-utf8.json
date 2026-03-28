@@ -1,0 +1,16 @@
+﻿Inspecting parent: projects/4555542864/apps/1:4555542864:android:29778052bea6fb28885c55
+Full Release Object Schema:
+{
+  "name": "projects/4555542864/apps/1:4555542864:android:29778052bea6fb28885c55/releases/2c37ml4jlm9o0",
+  "releaseNotes": {
+    "text": "BEE - Nueva versi├│n con mejoras y correcci├│n de bugs."
+  },
+  "displayVersion": "22.72.0",
+  "buildVersion": "227200",
+  "createTime": "2026-03-26T16:51:48.572009Z",
+  "firebaseConsoleUri": "https://console.firebase.google.com/project/banco-santa-fe/appdistribution/app/android:com.empresasbsf.mobile/releases/2c37ml4jlm9o0",
+  "testingUri": "https://appdistribution.firebase.google.com/testerapps/1:4555542864:android:29778052bea6fb28885c55/releases/2c37ml4jlm9o0",
+  "binaryDownloadUri": "https://firebaseappdistribution.googleapis.com/app-binary-downloads/projects/4555542864/apps/1:4555542864:android:29778052bea6fb28885c55/releases/2c37ml4jlm9o0/binaries/6632ab71037a8e2478833cc50c90e689b20547edc70f4711531c856520b49cb6/app.aab?token=AMQrnyYAAAAAacWkrXl0dtBeCJbqNfJvGnc4KFVNkGfsqBpHhTW9yM6xD5YmNW-2IT9oysfLDbKxCfTd1raeZm6MzE1UYmUkTxoa2Hfp8bapiQpa9gSVBFhL2nwJpXsniEL5zKDIcPKq6K3lVY0x86-kwaZmD24XqTqCa48bz6eyKoN_gIylOebY_7qEdtpAO-kFEVaQm4EXJTSkARZgcjY1QMMLTZFYK8gA6owPTAk_PbP44YTW8p6SHqHWs2mNyvlD-998kKDGmHnX8Mjknb5ztSsqhn2BLDxVHQOkDjP5J90JAEec75ZOjk0IZhMz8fSVog4JBJNnYOQZn73XpR9FHgqeC4yjPxviTi8",
+  "updateTime": "2026-03-26T16:51:52.092695Z",
+  "expireTime": "2026-08-23T16:51:48.572009Z"
+}

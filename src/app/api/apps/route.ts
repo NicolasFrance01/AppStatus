@@ -1,8 +1,20 @@
 import { NextResponse } from 'next/server';
 import prisma from "@/lib/db";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const type = searchParams.get('type');
+
   try {
+    if (type === 'firebase') {
+      const firebaseApps = await prisma.firebaseApp.findMany({
+        orderBy: { updatedAt: 'desc' },
+        include: { releases: { orderBy: { displayDate: 'desc' }, take: 10 } }
+      });
+      // Map to a common format if needed, but for now just return them
+      return NextResponse.json(firebaseApps);
+    }
+
     const apps = await prisma.app.findMany({
       orderBy: { updatedAt: 'desc' }
     });

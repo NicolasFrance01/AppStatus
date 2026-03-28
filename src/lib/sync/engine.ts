@@ -4,6 +4,7 @@ import { sendNotification } from "../notifications";
 import { fetchAppleAppStatus } from "./apple";
 import { fetchGoogleAppStatus } from "./google";
 import { sendStatusAlertEmail } from "../email";
+import { syncAllFirebaseApps } from "./firebase";
 
 export async function syncAppStatus(appId: string) {
   const app = await prisma.app.findUnique({ where: { id: appId } });
@@ -138,5 +139,14 @@ export async function syncAllApps(historyId?: string) {
         completedAt: new Date()
       }
     });
+  }
+
+  // Also sync all Firebase apps
+  console.log(`[Sync] Starting Firebase apps sync...`);
+  try {
+    await syncAllFirebaseApps();
+    console.log(`[Sync] Firebase sync completed.`);
+  } catch (error) {
+    console.error(`[Sync] Error syncing Firebase apps:`, error);
   }
 }

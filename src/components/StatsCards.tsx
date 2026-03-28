@@ -1,5 +1,4 @@
-import { AppStatus, Platform } from "@/generated/client";
-import { CheckCircle, Clock, AlertTriangle, XCircle, Package } from "lucide-react";
+import { CheckCircle, Clock, XCircle, Package, Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface StatsCardsProps {
@@ -18,12 +17,13 @@ interface StatsCardsProps {
 export function StatsCards({ stats, selectedStatus, onStatusChange }: StatsCardsProps) {
   const cards = [
     {
-      label: "Total Apps",
+      label: selectedStatus === 'FIREBASE' ? "APP´s Stores" : "Total Apps",
       value: stats.total,
       icon: Package,
       color: "text-slate-600",
       bg: "bg-slate-50",
       status: null,
+      visible: true,
     },
     {
       label: "Published",
@@ -32,6 +32,7 @@ export function StatsCards({ stats, selectedStatus, onStatusChange }: StatsCards
       color: "text-emerald-600",
       bg: "bg-emerald-50",
       status: "PUBLISHED",
+      visible: selectedStatus !== 'FIREBASE',
     },
     {
       label: "In Review",
@@ -40,6 +41,7 @@ export function StatsCards({ stats, selectedStatus, onStatusChange }: StatsCards
       color: "text-amber-600",
       bg: "bg-amber-50",
       status: "IN_REVIEW",
+      visible: selectedStatus !== 'FIREBASE',
     },
     {
       label: "Pending Publication",
@@ -48,6 +50,7 @@ export function StatsCards({ stats, selectedStatus, onStatusChange }: StatsCards
       color: "text-blue-600",
       bg: "bg-blue-50",
       status: "PENDING_PUBLICATION",
+      visible: selectedStatus !== 'FIREBASE',
     },
     {
       label: "Rejected",
@@ -56,21 +59,29 @@ export function StatsCards({ stats, selectedStatus, onStatusChange }: StatsCards
       color: "text-rose-600",
       bg: "bg-rose-50",
       status: "REJECTED",
+      visible: selectedStatus !== 'FIREBASE',
     },
     {
-      label: "Action Required",
+      label: "Firebase",
       value: stats.actionRequired,
-      icon: AlertTriangle,
+      icon: Flame,
       color: "text-orange-600",
       bg: "bg-orange-50",
-      status: "ACTION_REQUIRED",
+      status: "FIREBASE",
+      visible: true,
     },
   ];
 
+  const visibleCards = cards.filter(c => c.visible);
+
   return (
-    <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6 mb-8">
-      {cards.map((card) => {
+    <div className={cn(
+      "grid gap-4 mb-8",
+      visibleCards.length === 2 ? "md:grid-cols-2" : "md:grid-cols-3 lg:grid-cols-6"
+    )}>
+      {visibleCards.map((card) => {
         const isActive = selectedStatus === card.status;
+        const Icon = card.icon;
         return (
           <button
             key={card.label}
@@ -85,13 +96,15 @@ export function StatsCards({ stats, selectedStatus, onStatusChange }: StatsCards
           >
             <div className="flex items-center gap-3">
               <div className={cn("rounded-lg p-1.5 bg-white shadow-sm flex-shrink-0", card.color)}>
-                <card.icon size={18} />
+                <Icon size={18} />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider leading-tight">
                   {card.label}
                 </p>
-                <p className="text-xl font-bold text-slate-900 leading-none mt-0.5">{card.value}</p>
+                {card.label !== 'Firebase' && card.label !== "APP´s Stores" && (
+                  <p className="text-xl font-bold text-slate-900 leading-none mt-0.5">{card.value}</p>
+                )}
               </div>
             </div>
           </button>

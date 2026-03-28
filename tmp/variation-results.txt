@@ -1,0 +1,21 @@
+
+Testing URL: https://firebaseappdistribution.googleapis.com/v1alpha/projects/4555542864/apps/1:4555542864:android:29778052bea6fb28885c55/releases
+FAILED: 404
+Error Data: "<!DOCTYPE html>\n<html lang=en>\n  <meta charset=utf-8>\n  <meta name=viewport content=\"initial-scale=1, minimum-scale=1, width=device-width\">\n  <title>Error 404 (Not Found)!!1</title>\n  <style>\
+
+Testing URL: https://firebaseappdistribution.googleapis.com/v1alpha/projects/banco-santa-fe/apps/1:4555542864:android:29778052bea6fb28885c55/releases
+FAILED: 404
+Error Data: "<!DOCTYPE html>\n<html lang=en>\n  <meta charset=utf-8>\n  <meta name=viewport content=\"initial-scale=1, minimum-scale=1, width=device-width\">\n  <title>Error 404 (Not Found)!!1</title>\n  <style>\
+
+Testing URL: https://firebaseappdistribution.googleapis.com/v1alpha/apps/1:4555542864:android:29778052bea6fb28885c55/releases
+FAILED: 404
+Error Data: "<!DOCTYPE html>\n<html lang=en>\n  <meta charset=utf-8>\n  <meta name=viewport content=\"initial-scale=1, minimum-scale=1, width=device-width\">\n  <title>Error 404 (Not Found)!!1</title>\n  <style>\
+
+Testing URL: https://firebaseappdistribution.googleapis.com/v1/projects/4555542864/apps/1:4555542864:android:29778052bea6fb28885c55/releases?view=FULL
+SUCCESS!
+First Release: 22.72.0 (227200)
+Metrics: testerCount=undefined, openInvitationCount=undefined, testerWithInstallCount=undefined
+
+Testing URL: https://firebaseappdistribution.googleapis.com/v1/projects/banco-santa-fe/apps/1:4555542864:android:29778052bea6fb28885c55/releases?view=FULL
+FAILED: 400
+Error Data: {"error":{"code":400,"message":"Request contains an invalid argument.","errors":[{"message":"Request contains an invalid argument.","domain":"global","reason":"badRequest"}],"status":"INVALID_ARGUMENT

@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "GP App Status",
+  title: "App Status",
   description: "Monitoreo y Gestión de Aplicaciones Móviles - Algeiba",
   icons: {
     icon: "/logo.png",

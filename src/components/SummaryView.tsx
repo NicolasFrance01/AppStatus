@@ -3,7 +3,8 @@ import { cn } from "@/lib/utils";
 import { Apple } from "lucide-react";
 
 interface SummaryViewProps {
-  apps: App[];
+  apps: any[];
+  isFirebase?: boolean;
 }
 
 const BANKS = [
@@ -28,21 +29,25 @@ function getBankLogoById(id: string, isBee: boolean) {
 
 interface SummaryTableProps {
   title: "BEE" | "HBI";
-  filteredApps: App[];
+  filteredApps: any[];
   isBee?: boolean;
+  isFirebase?: boolean;
 }
 
-function SummaryTable({ title, filteredApps, isBee = false }: SummaryTableProps) {
+function SummaryTable({ title, filteredApps, isBee = false, isFirebase = false }: SummaryTableProps) {
   return (
     <div className="overflow-hidden rounded-xl border border-slate-300 bg-white shadow-md">
-      <div className="bg-slate-800 py-2.5 text-center font-bold text-white shadow-inner">
-        {title}
+      <div className="bg-slate-800 py-2.5 text-center font-bold text-white shadow-inner uppercase tracking-widest text-sm">
+        {title === "BEE" ? "Empresas (BEE)" : "Individuos (HBI)"}
       </div>
-      <div className="grid grid-cols-[1fr_minmax(80px,auto)_1.5fr_1.5fr] divide-slate-200">
-        <div className="bg-slate-100 border-r border-b border-slate-300 p-2 text-center text-xs font-bold text-slate-700">Estado de Apps</div>
-        <div className="bg-slate-100 border-r border-b border-slate-300 p-2 text-center text-xs font-bold text-slate-700">Version</div>
-        <div className="bg-slate-100 border-r border-b border-slate-300 p-2 text-center text-xs font-bold text-slate-700">Platform</div>
-        <div className="bg-slate-100 border-b border-slate-300 p-2 text-center text-xs font-bold text-slate-700">Status</div>
+      <div className={cn(
+        "grid divide-slate-200",
+        isFirebase ? "grid-cols-[1fr_minmax(100px,auto)_1fr]" : "grid-cols-[1fr_minmax(80px,auto)_1.5fr_1.5fr]"
+      )}>
+        <div className="bg-slate-100 border-r border-b border-slate-300 p-2 text-center text-[10px] font-black uppercase text-slate-500">Estado de Apps</div>
+        <div className="bg-slate-100 border-r border-b border-slate-300 p-2 text-center text-[10px] font-black uppercase text-slate-500">Version</div>
+        <div className="bg-slate-100 border-r border-b border-slate-300 p-2 text-center text-[10px] font-black uppercase text-slate-500">Platform</div>
+        {!isFirebase && <div className="bg-slate-100 border-b border-slate-300 p-2 text-center text-[10px] font-black uppercase text-slate-500">Status</div>}
 
         {BANKS.map((bank) => (
           <div key={bank.id} className="contents">
@@ -83,12 +88,17 @@ function SummaryTable({ title, filteredApps, isBee = false }: SummaryTableProps)
                       </div>
                     )}
                   </div>
-                  <div className="bg-white border-r border-b border-slate-300 p-2 flex items-center justify-center font-medium text-center">
+                  <div className={cn(
+                    "bg-white border-b border-slate-300 p-2 flex items-center justify-center font-bold text-center leading-tight min-h-[48px]",
+                    !isFirebase && "border-r"
+                  )}>
                     {version}{build}
                   </div>
-                  <div className={cn("border-b border-slate-300 p-2 flex items-center justify-center font-bold text-center leading-tight min-h-[40px]", statusStyles)}>
-                    {getStatusLabel(app?.status, title as "BEE" | "HBI")}
-                  </div>
+                  {!isFirebase && (
+                    <div className={cn("border-b border-slate-300 p-2 flex items-center justify-center font-bold text-center leading-tight min-h-[40px]", statusStyles)}>
+                      {getStatusLabel(app?.status, title as "BEE" | "HBI")}
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -99,17 +109,27 @@ function SummaryTable({ title, filteredApps, isBee = false }: SummaryTableProps)
   );
 }
 
-export function SummaryView({ apps }: SummaryViewProps) {
+export function SummaryView({ apps, isFirebase = false }: SummaryViewProps) {
   // BEE: version 2.x.x, HBI: version 1.x.x
-  const beeApps = apps.filter((app) => (app.currentVersion || "").startsWith("2."));
-  const hbiApps = apps.filter((app) => (app.currentVersion || "").startsWith("1."));
+  const beeApps = apps.filter((app) => 
+    (app as any).segment === 'BEE' || 
+    (app as any).calculatedSegment === 'BEE' || // Use the calculated segment from AppTable
+    (app.currentVersion || "").startsWith("2.") || 
+    (app.currentVersion || "").startsWith("22.") ||
+    (app.currentVersion || "").startsWith("32.")
+  );
+  const hbiApps = apps.filter((app) => 
+    (app as any).segment === 'HBI' || 
+    (app as any).calculatedSegment === 'HBI' ||
+    (app.currentVersion || "").startsWith("1.") ||
+    (app.currentVersion || "").startsWith("11.")
+  );
 
   return (
     <div className="mb-12 mt-4 space-y-6">
-
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-        <SummaryTable title="BEE" filteredApps={beeApps} isBee={true} />
-        <SummaryTable title="HBI" filteredApps={hbiApps} isBee={false} />
+        <SummaryTable title="BEE" filteredApps={beeApps} isBee={true} isFirebase={isFirebase} />
+        <SummaryTable title="HBI" filteredApps={hbiApps} isBee={false} isFirebase={isFirebase} />
       </div>
     </div>
   );

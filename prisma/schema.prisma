@@ -124,3 +124,36 @@ model SystemConfig {
   autoSyncEnabled     Boolean  @default(true)
   updatedAt           DateTime @updatedAt
 }
+model FirebaseApp {
+  id               String            @id @default(uuid())
+  name             String
+  firebaseAppId    String            @unique
+  bank             String            // BSJ, BSF, BER, BSC
+  platform         Platform
+  bundleId         String
+  segment          String?           // EMPRESAS, INDIVIDUOS
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  releases         FirebaseRelease[]
+
+  @@index([bank])
+  @@index([platform])
+}
+
+model FirebaseRelease {
+  id            String      @id @default(uuid())
+  externalId    String      @unique // Firebase's release.name
+  firebaseAppId String
+  app           FirebaseApp @relation(fields: [firebaseAppId], references: [id], onDelete: Cascade)
+  version       String
+  buildNumber   String
+  releaseNotes  String?
+  displayDate   DateTime    // The date shown in Firebase
+  invitedCount  Int?        @default(0)
+  acceptedCount Int?        @default(0)
+  downloadedCount Int?      @default(0)
+  createdAt     DateTime    @default(now())
+
+  @@index([firebaseAppId])
+  @@index([displayDate])
+}
