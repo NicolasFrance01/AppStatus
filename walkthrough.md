@@ -44,9 +44,9 @@ He implementado un sistema de alertas proactivo para Firebase y refinado los cor
 - **Base de Datos Purificada**: Se eliminaron todos los registros de prueba y "mocker" para tener una fuente de verdad única basada en IDs oficiales.
 - **Corrección de App IDs**: Se corrigieron IDs críticos (como el de BSC Android Empresas) para asegurar sincronizaciones exitosas.
 - **UX de Filtrado**: Se implementó una lógica de filtros secuencial (Banco -> Plataforma -> Segmento) que evita errores de carga y muestra solo lo relevante.
-- **Notas de Versiones**: El sistema ahora rastrea y muestra notas individuales por versión, no solo la última global.
+- **Contador "En Revisión"**: Se corrigió la métrica del dashboard para que agrupe tanto aplicaciones `In Review` como `Pending Review`, asegurando un conteo preciso de las tareas pendientes en las tiendas.
 
-¡El sistema está 100% operativo con datos reales de producción y un sistema de alertas proactivo!
+¡El sistema v2.7.1 está 100% operativo con datos reales de producción y un sistema de alertas proactivo!
 
 ## Final Result
 The dashboard is now a mirror of the real Firebase and database state, with absolute logical segregation that meets the highest standards of accuracy.

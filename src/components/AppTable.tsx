@@ -103,7 +103,14 @@ export function AppTable({ apps, statusFilter, bankFilter, onBankChange }: AppTa
     return apps.filter((app: any) => {
       const bank = app.entity || app.bank;
       const matchesEntity = bankFilter === "all" || bank === bankFilter;
-      const matchesStatus = !statusFilter || app.status === statusFilter;
+      
+      let matchesStatus = !statusFilter || app.status === statusFilter;
+      
+      // If filtering by "In Review", include both IN_REVIEW and PENDING_REVIEW
+      if (statusFilter === 'IN_REVIEW') {
+        matchesStatus = app.status === 'IN_REVIEW' || app.status === 'PENDING_REVIEW';
+      }
+      
       return matchesEntity && matchesStatus;
     });
   }, [apps, bankFilter, statusFilter, segmentFilter, localPlatformFilter]);
