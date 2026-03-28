@@ -557,7 +557,8 @@ export default function DashboardPage() {
 
       <footer className="mt-auto border-t border-slate-200 bg-white py-8">
         <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-500 whitespace-pre-line">
+            v2.7.1
             &copy; {new Date().getFullYear()} Sistema de Gestión de Apps
           </p>
           <button 

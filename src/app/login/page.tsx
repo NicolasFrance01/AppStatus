@@ -176,7 +176,8 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-10 text-center">
-            <p className="text-xs text-slate-400 font-medium">
+            <p className="text-xs text-slate-400 font-medium whitespace-pre-line">
+              v2.7.1
               &copy; {new Date().getFullYear()} Sistema de Gestión de Apps
             </p>
             <button 
