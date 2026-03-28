@@ -201,7 +201,7 @@ export default function DashboardPage() {
   const stats = {
     total: apps.length,
     published: apps.filter(a => (a as any).status === 'PUBLISHED').length,
-    inReview: apps.filter(a => (a as any).status === 'IN_REVIEW').length,
+    inReview: apps.filter(a => (a as any).status === 'IN_REVIEW' || (a as any).status === 'PENDING_REVIEW').length,
     pendingPublication: apps.filter(a => (a as any).status === 'PENDING_PUBLICATION').length,
     rejected: apps.filter(a => (a as any).status === 'REJECTED').length,
     actionRequired: statusFilter === 'FIREBASE' ? apps.length : 0, // Simplified for now
