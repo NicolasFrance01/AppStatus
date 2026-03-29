@@ -26,6 +26,7 @@ export async function getUsers() {
       username: true,
       name: true,
       role: true,
+      receivesAlerts: true,
       createdAt: true,
       passwordExpiresAt: true,
       mustChangePassword: true,
@@ -100,6 +101,15 @@ export async function updateUserRole(id: string, role: Role) {
   return await prisma.user.update({
     where: { id },
     data: { role }
+  });
+}
+
+export async function toggleUserAlerts(id: string, receivesAlerts: boolean) {
+  await checkAdmin();
+  
+  return await prisma.user.update({
+    where: { id },
+    data: { receivesAlerts }
   });
 }
 

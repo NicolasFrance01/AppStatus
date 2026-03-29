@@ -74,6 +74,7 @@ model User {
   password           String
   name               String?
   role               Role      @default(READER)
+  receivesAlerts     Boolean   @default(false)
   mustChangePassword Boolean   @default(false)
   passwordExpiresAt  DateTime?
   passwordChangedAt  DateTime?

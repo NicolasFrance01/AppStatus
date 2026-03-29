@@ -13,7 +13,9 @@ import {
   CheckCircle2,
   AlertCircle,
   AlertTriangle,
-  Pencil
+  Pencil,
+  Bell,
+  BellOff
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { 
@@ -21,7 +23,8 @@ import {
   createUser, 
   deleteUser, 
   updateUserRole,
-  updateUser 
+  updateUser,
+  toggleUserAlerts
 } from "@/lib/user-actions";
 import { Role } from "@/generated/client";
 
@@ -31,6 +34,7 @@ interface User {
   username: string;
   name: string | null;
   role: Role;
+  receivesAlerts: boolean;
   createdAt: Date;
   passwordExpiresAt: Date | null;
   mustChangePassword: boolean;
@@ -118,6 +122,16 @@ export function UserManagement() {
       setError(err.message || "Error al actualizar rol.");
     } finally {
       setIsActionLoading(false);
+    }
+  };
+
+  const handleToggleAlerts = async (id: string, current: boolean) => {
+    try {
+      await toggleUserAlerts(id, !current);
+      setSuccess(`Alertas ${ !current ? 'activadas' : 'desactivadas'}.`);
+      loadUsers();
+    } catch (err: any) {
+      setError(err.message || "Error al actualizar alertas.");
     }
   };
 
@@ -218,6 +232,7 @@ export function UserManagement() {
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Username / Email</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Clave Temporal</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Rol de Acceso</th>
+                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">Alertas 🔔</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-right">Acciones</th>
               </tr>
             </thead>
@@ -319,6 +334,21 @@ export function UserManagement() {
                           <option value="DEVELOPER">DEVELOPER</option>
                           <option value="READER">READER</option>
                         </select>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <button
+                          onClick={() => handleToggleAlerts(user.id, user.receivesAlerts)}
+                          title={user.receivesAlerts ? "Desactivar alertas por correo" : "Activar alertas por correo"}
+                          className={cn(
+                            "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border-2",
+                            user.receivesAlerts
+                              ? "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100"
+                              : "bg-slate-50 border-slate-200 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                          )}
+                        >
+                          {user.receivesAlerts ? <Bell size={14} /> : <BellOff size={14} />}
+                          {user.receivesAlerts ? "Activo" : "Inactivo"}
+                        </button>
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-1">

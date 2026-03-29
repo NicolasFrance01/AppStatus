@@ -92,11 +92,11 @@ export async function syncAppStatus(appId: string) {
       }
     });
 
-    // Send Email to Admins
-    const admins = await prisma.user.findMany({ where: { role: 'ADMIN' } });
-    const adminEmails = admins.map(a => a.email);
-    if (adminEmails.length > 0) {
-      await sendStatusAlertEmail(adminEmails, app.name, oldStatus, newStatus, app.platform, app.entity);
+    // Send Email to users who opted in for alerts
+    const alertRecipients = await prisma.user.findMany({ where: { receivesAlerts: true } });
+    const alertEmails = alertRecipients.map(u => u.email);
+    if (alertEmails.length > 0) {
+      await sendStatusAlertEmail(alertEmails, app.name, oldStatus, newStatus, app.platform, app.entity);
     }
 
     await sendNotification(app.name, oldStatus, newStatus);

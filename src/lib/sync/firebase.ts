@@ -108,15 +108,15 @@ export async function syncFirebaseApp(appId: string) {
           }
         });
 
-        // Send Email to Admins
+        // Send Email to users who opted in for alerts
         const { sendFirebaseReleaseEmail } = await import('../email');
-        const admins = await prisma.user.findMany({ where: { role: 'ADMIN' } });
-        const adminEmails = admins.map(a => a.email);
+        const alertRecipients = await prisma.user.findMany({ where: { receivesAlerts: true } });
+        const alertEmails = alertRecipients.map(u => u.email);
         
-        if (adminEmails.length > 0) {
+        if (alertEmails.length > 0) {
           try {
             await sendFirebaseReleaseEmail(
-              adminEmails,
+              alertEmails,
               app.name,
               release.displayVersion,
               release.buildVersion,
