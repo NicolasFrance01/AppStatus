@@ -46,7 +46,31 @@ He implementado un sistema de alertas proactivo para Firebase y refinado los cor
 - **UX de Filtrado**: Se implementó una lógica de filtros secuencial (Banco -> Plataforma -> Segmento) que evita errores de carga y muestra solo lo relevante.
 - **Contador "En Revisión"**: Se corrigió la métrica del dashboard para que agrupe tanto aplicaciones `In Review` como `Pending Review`, asegurando un conteo preciso de las tareas pendientes en las tiendas.
 
-¡El sistema v2.7.1 está 100% operativo con datos reales de producción y un sistema de alertas proactivo!
+## Docker Deployment
+
+El sistema ha sido configurado para ser desplegado en cualquier servidor de manera eficiente utilizando contenedores de Docker mediante una compilación "standalone" (empaquetando lo mínimo necesario para que ocupe menos espacio):
+
+### 1. Construcción de la Imagen
+```bash
+docker build -t app-status .
+```
+
+### 2. Ejecutar el Contenedor
+Es necesario inyectar las variables de entorno de producción:
+```bash
+docker run -d -p 3000:3000 \
+  -e DATABASE_URL="postgresql://[USUARIO]:[CLAVE]@[HOST]:5432/[DB]?sslmode=require" \
+  -e NEXTAUTH_SECRET="tu_secreto" \
+  -e NEXTAUTH_URL="https://midominio.com" \
+  -e NEXT_PUBLIC_APP_URL="https://midominio.com" \
+  -e SMTP_USER="correo@gmail.com" \
+  -e SMTP_PASS="tu_clave_de_aplicacion" \
+  --name app-status-container \
+  app-status
+```
+*(Asegúrate de agregar las credenciales de Service Accounts de Google y Apple Key IDs en las variables correspondientes si es que quieres que se conecten con las tiendas productivas desde ese servidor local/host).*
+
+¡El sistema v2.7.1 está 100% operativo con datos reales de producción y capacidades Multi-Entorno listas!
 
 ## Final Result
 The dashboard is now a mirror of the real Firebase and database state, with absolute logical segregation that meets the highest standards of accuracy.
