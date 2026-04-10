@@ -113,16 +113,14 @@ export function SummaryView({ apps, isFirebase = false }: SummaryViewProps) {
   // BEE: version 2.x.x, HBI: version 1.x.x
   const beeApps = apps.filter((app) => 
     (app as any).segment === 'BEE' || 
-    (app as any).calculatedSegment === 'BEE' || // Use the calculated segment from AppTable
-    (app.currentVersion || "").startsWith("2.") || 
-    (app.currentVersion || "").startsWith("22.") ||
-    (app.currentVersion || "").startsWith("32.")
+    (app as any).calculatedSegment === 'BEE' || 
+    /\b(2|22|32)\.\d+/.test(app.currentVersion || "")
   );
+  
   const hbiApps = apps.filter((app) => 
     (app as any).segment === 'HBI' || 
     (app as any).calculatedSegment === 'HBI' ||
-    (app.currentVersion || "").startsWith("1.") ||
-    (app.currentVersion || "").startsWith("11.")
+    /\b(1|11)\.\d+/.test(app.currentVersion || "")
   );
 
   return (

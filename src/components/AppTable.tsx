@@ -62,8 +62,8 @@ export function AppTable({ apps, statusFilter, bankFilter, onBankChange }: AppTa
             const appName = (app.name || "").toLowerCase();
             const isIndividuoName = appName.includes("individuo");
             
-            const isHbiVersion = v.startsWith("1.") || v.startsWith("11.");
-            const isBeeVersion = v.startsWith("2.") || v.startsWith("22.") || v.startsWith("32.");
+            const isHbiVersion = /\b(1|11)\.\d+/.test(v);
+            const isBeeVersion = /\b(2|22|32)\.\d+/.test(v);
             
             // ABSOLUTE FILTER: Individuo apps MUST have 1.x or 11.x versions.
             // Business/UAT apps MUST have 2.x, 22.x, or 32.x versions.
