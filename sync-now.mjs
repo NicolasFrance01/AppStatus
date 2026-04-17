@@ -163,14 +163,17 @@ async function syncGoogle(packageName) {
         // If API says completed but store version is different (older), it's "Ready to publish"
         if (statusInfo.status === 'PUBLISHED') {
           const storeVersion = await getStoreVersion(packageName);
-          const normalize = (v) => v.match(/[\d\.]+/)?.[0] || v;
-          const normApi = normalize(apiVersion);
-          const normStore = normalize(storeVersion || "");
+          if (storeVersion) {
+            const clean = (v) => v.replace(/[^\d\.]/g, ' ').trim();
+            const vApi = clean(apiVersion);
+            const vStore = clean(storeVersion);
+            const isMatch = vApi.includes(vStore) || vStore.includes(vApi);
 
-          if (storeVersion && normStore !== normApi) {
-            finalStatus = 'PENDING_PUBLICATION';
-            finalUpdateLabel = 'Lista para publicarse';
-            console.log(`  🔍 Managed Publishing detected for ${packageName}: Store(${storeVersion}) vs API(${apiVersion})`);
+            if (!isMatch) {
+              finalStatus = 'PENDING_PUBLICATION';
+              finalUpdateLabel = 'Lista para publicarse';
+              console.log(`  🔍 Managed Publishing detected for ${packageName}: Store(${storeVersion}) vs API(${apiVersion})`);
+            }
           }
         }
 

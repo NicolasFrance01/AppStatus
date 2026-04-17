@@ -133,15 +133,20 @@ export async function fetchGoogleAppStatus(packageName: string) {
       if (statusInfo.status === AppStatus.PUBLISHED && productionTrack) {
         const storeVersion = await getStoreVersion(packageName);
         
-        // Clean up versions for comparison (e.g., "1.97.0 (123)" -> "1.97.0")
-        const normalize = (v: string) => v.match(/[\d\.]+/)?.[0] || v;
-        const normApi = normalize(apiVersion);
-        const normStore = normalize(storeVersion || "");
+        if (storeVersion) {
+          // Flexible matching: check if store version is part of the API version string or vice versa
+          // (Handles cases like API="19700 (1.97.0)" vs Store="1.97.0")
+          const clean = (v: string) => v.replace(/[^\d\.]/g, ' ').trim();
+          const vApi = clean(apiVersion);
+          const vStore = clean(storeVersion);
+          
+          const isMatch = vApi.includes(vStore) || vStore.includes(vApi);
 
-        if (storeVersion && normStore !== normApi) {
-          finalStatus = AppStatus.PENDING_PUBLICATION; 
-          finalUpdateLabel = 'En revisión / Listo para publicar';
-          console.log(`[Google] Managed Publishing detected for ${packageName}: Store(${storeVersion}) vs API(${apiVersion})`);
+          if (!isMatch) {
+            finalStatus = AppStatus.PENDING_PUBLICATION; 
+            finalUpdateLabel = 'En revisión / Listo para publicar';
+            console.log(`[Google] Managed Publishing detected for ${packageName}: Store(${storeVersion}) vs API(${apiVersion})`);
+          }
         }
       }
 
