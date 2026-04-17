@@ -153,23 +153,14 @@ export async function fetchAppleAppStatus(bundleId: string) {
   };
 
   const latestV = versions[0];
-  const liveV = versions.find((v: any) => v.attributes.appStoreState === 'READY_FOR_SALE');
-
-  const selectedV = latestV;
-  const status = statusMap[selectedV.attributes.appStoreState] || AppStatus.PENDING_REVIEW;
-  let updateLabel = updateStatusMap[selectedV.attributes.appStoreState] || 'Publicado';
-
-  // Dual Status Logic: Latest-First
-  // If latest is NOT the live version, but a live version exists, add LIVE badge
-  if (liveV && liveV.id !== latestV.id) {
-    updateLabel = `LIVE:${liveV.attributes.versionString}`;
-  }
+  const status = statusMap[latestV.attributes.appStoreState] || AppStatus.PENDING_REVIEW;
+  const updateLabel = updateStatusMap[latestV.attributes.appStoreState] || 'Publicado';
 
   return {
     status,
     storeStatus: 'Producción',
     updateStatus: updateLabel,
-    version: selectedV.attributes.versionString,
+    version: latestV.attributes.versionString,
     build: 'N/A',
   };
 }

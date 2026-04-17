@@ -82,28 +82,17 @@ async function syncApple(bundleId) {
       };
 
       const latestV = versions[0];
-      const liveV = versions.find(v => v.attributes.appStoreState === 'READY_FOR_SALE');
+      const status = stateMap[latestV.attributes.appStoreState] || 'PENDING_REVIEW';
+      const updateLabel = updateLabelMap[latestV.attributes.appStoreState] || 'Publicado';
 
-      const selectedV = latestV;
-      const status = stateMap[selectedV.attributes.appStoreState] || 'PENDING_REVIEW';
-      let updateLabel = updateLabelMap[selectedV.attributes.appStoreState] || 'Publicado';
-
-      // Dual Status Logic: Latest-First
-      if (liveV && liveV.id !== latestV.id) {
-        updateLabel = `LIVE:${liveV.attributes.versionString}`;
-      }
-
-      const appleState = selectedV.attributes.appStoreState;
-      const result = {
-        status: stateMap[appleState] || 'PENDING_REVIEW',
-        storeStatus: 'Producción',
-        updateStatus: appleUpdateStatusMap[appleState] || appleState,
-        version: selectedV.attributes.versionString,
-        build: 'N/A',
+      console.log(`  🍎 ${label}: ${bundleId} → ${status} v${latestV.attributes.versionString}`);
+      return { 
+        status, 
+        updateStatus: updateLabel, 
+        version: latestV.attributes.versionString, 
+        build: 'N/A', 
+        storeStatus: 'Producción' 
       };
-
-      console.log(`  🍎 ${label}: ${bundleId} → ${result.status} v${result.version} (${appleState})`);
-      return result;
     } catch (e) { 
       console.error(`  🍎 Error ${label} for ${bundleId}:`, e.message);
     }

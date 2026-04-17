@@ -130,23 +130,7 @@ export async function fetchGoogleAppStatus(packageName: string) {
       // If Production API says completed but store version is different (older), 
       // it's "Ready to publish" or "In Review".
       // ONLY apply to Production to avoid confusing Beta updates.
-      if (statusInfo.status === AppStatus.PUBLISHED && productionTrack) {
-        const storeVersion = await getStoreVersion(packageName);
-        
-        if (storeVersion) {
-          const clean = (v: string) => v.replace(/[^\d\.]/g, ' ').trim();
-          const vApi = clean(apiVersion);
-          const vStore = clean(storeVersion);
-          
-          const isMatch = vApi.includes(vStore) || vStore.includes(vApi);
-
-          if (!isMatch) {
-            // Dual Status for Android: Priority to Latest (API)
-            finalUpdateLabel = `LIVE:${storeVersion}`;
-            console.log(`[Google] Managed Publishing detected for ${packageName}: Store(${storeVersion}) vs API(${apiVersion})`);
-          }
-        }
-      }
+      // Latest-only: no complex matching for now as requested.
 
       console.log(`[Google] Found "${packageName}" using ${label} account`);
       return {
