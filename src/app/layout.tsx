@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "App Status",
-  description: "Monitoreo y Gestión de Aplicaciones Móviles - Algeiba",
+  description: "Monitoreo y Gestión de Aplicaciones Móviles - Algeiba v2",
   icons: {
     icon: "/logo.png",
     apple: "/logo.png",
