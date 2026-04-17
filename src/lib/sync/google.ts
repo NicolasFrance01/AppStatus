@@ -132,10 +132,13 @@ export async function fetchGoogleAppStatus(packageName: string) {
       // ONLY apply to Production to avoid confusing Beta updates.
       if (statusInfo.status === AppStatus.PUBLISHED && productionTrack) {
         const storeVersion = await getStoreVersion(packageName);
-        if (storeVersion && storeVersion !== apiVersion) {
-          // Since we can't differentiate "In Review" and "Approved" via API when Managed Publishing is ON,
-          // we use PENDING_PUBLICATION as it's what the user expects for approved apps, 
-          // but with a label that mentions both possibilities.
+        
+        // Clean up versions for comparison (e.g., "1.97.0 (123)" -> "1.97.0")
+        const normalize = (v: string) => v.match(/[\d\.]+/)?.[0] || v;
+        const normApi = normalize(apiVersion);
+        const normStore = normalize(storeVersion || "");
+
+        if (storeVersion && normStore !== normApi) {
           finalStatus = AppStatus.PENDING_PUBLICATION; 
           finalUpdateLabel = 'En revisión / Listo para publicar';
           console.log(`[Google] Managed Publishing detected for ${packageName}: Store(${storeVersion}) vs API(${apiVersion})`);

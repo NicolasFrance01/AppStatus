@@ -178,10 +178,5 @@ export async function fetchAppleAppStatus(bundleId: string) {
     build: 'N/A',
   };
 
-  // If we are showing LIVE version but there's a newer one pending/in-review
-  if (liveV && latestV.id !== liveV.id) {
-    result.updateStatus += ` (Update: ${latestV.attributes.versionString} ${latestV.attributes.appStoreState})`;
-  }
-
   return result;
 }

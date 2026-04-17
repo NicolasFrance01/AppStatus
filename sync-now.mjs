@@ -89,11 +89,6 @@ async function syncApple(bundleId) {
         build: 'N/A',
       };
 
-      // Add hint if there's a newer version pending
-      if (liveV && latestV.id !== liveV.id) {
-        result.updateStatus += ` (Update: ${latestV.attributes.versionString} ${latestV.attributes.appStoreState})`;
-      }
-
       console.log(`  🍎 ${label}: ${bundleId} → ${result.status} v${result.version} (${appleState})`);
       return result;
     } catch (e) { 
@@ -168,7 +163,11 @@ async function syncGoogle(packageName) {
         // If API says completed but store version is different (older), it's "Ready to publish"
         if (statusInfo.status === 'PUBLISHED') {
           const storeVersion = await getStoreVersion(packageName);
-          if (storeVersion && storeVersion !== apiVersion) {
+          const normalize = (v) => v.match(/[\d\.]+/)?.[0] || v;
+          const normApi = normalize(apiVersion);
+          const normStore = normalize(storeVersion || "");
+
+          if (storeVersion && normStore !== normApi) {
             finalStatus = 'PENDING_PUBLICATION';
             finalUpdateLabel = 'Lista para publicarse';
             console.log(`  🔍 Managed Publishing detected for ${packageName}: Store(${storeVersion}) vs API(${apiVersion})`);

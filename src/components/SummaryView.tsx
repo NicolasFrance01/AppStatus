@@ -95,13 +95,8 @@ function SummaryTable({ title, filteredApps, isBee = false, isFirebase = false }
                     {version}{build}
                   </div>
                   {!isFirebase && (
-                    <div className={cn("border-b border-slate-300 p-2 flex flex-col items-center justify-center font-bold text-center leading-tight min-h-[40px]", statusStyles)}>
-                      <span>{getStatusLabel(app?.status, title as "BEE" | "HBI")}</span>
-                      {app?.updateStatus && app.updateStatus.includes("(") && (
-                        <span className="text-[8px] opacity-80 mt-0.5 font-normal leading-none italic">
-                          {app.updateStatus.split("(")[1].replace(")", "")}
-                        </span>
-                      )}
+                    <div className={cn("border-b border-slate-300 p-2 flex items-center justify-center font-bold text-center leading-tight min-h-[40px]", statusStyles)}>
+                      {getStatusLabel(app?.status, title as "BEE" | "HBI")}
                     </div>
                   )}
                 </div>
