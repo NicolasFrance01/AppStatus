@@ -68,11 +68,13 @@ async function syncApple(bundleId) {
       // 2. If there is a READY_FOR_SALE (Live) version, the app is PUBLISHED, but maybe with a pending update.
       // 3. Otherwise, pick the latest created version.
       
-      const rejectedV = versions.find(v => v.attributes.appStoreState === 'REJECTED' || v.attributes.appStoreState === 'METADATA_REJECTED');
       const liveV = versions.find(v => v.attributes.appStoreState === 'READY_FOR_SALE');
-      const latestV = versions[0]; // Usually the newest one
+      const rejectedV = versions.find(v => 
+        ['REJECTED', 'METADATA_REJECTED', 'DEVELOPER_REJECTED'].includes(v.attributes.appStoreState)
+      );
+      const latestV = versions[0];
 
-      let selectedV = rejectedV || liveV || latestV;
+      let selectedV = liveV || rejectedV || latestV;
       
       // Special case: if we are live but have a pending release or review, we might want to mention it.
       // For now, if live, we say PUBLISHED.

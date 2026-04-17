@@ -138,19 +138,15 @@ export async function fetchAppleAppStatus(bundleId: string) {
     };
   }
 
-  // Priority logic for multiple versions (same as sync-now.mjs)
+  const liveV = versions.find((v: any) => v.attributes.appStoreState === 'READY_FOR_SALE');
   const rejectedV = versions.find((v: any) => 
     v.attributes.appStoreState === 'REJECTED' || 
     v.attributes.appStoreState === 'METADATA_REJECTED' || 
     v.attributes.appStoreState === 'DEVELOPER_REJECTED'
   );
-  const liveV = versions.find((v: any) => v.attributes.appStoreState === 'READY_FOR_SALE');
   const latestV = versions[0];
 
-  let selectedV = rejectedV || liveV || latestV;
-  if (liveV && selectedV.attributes.appStoreState !== 'REJECTED') {
-    selectedV = liveV;
-  }
+  let selectedV = liveV || rejectedV || latestV;
 
   const appleState = selectedV.attributes.appStoreState;
   const status = statusMap[appleState] || AppStatus.PENDING_REVIEW;
