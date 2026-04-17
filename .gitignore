@@ -48,3 +48,5 @@ next-env.d.ts
 !next.config.mjs
 !next-auth.mjs
 !prisma/seed-admin.mjs
+!sync-now.mjs
+!seed-all.mjs

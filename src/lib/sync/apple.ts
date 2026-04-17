@@ -97,12 +97,12 @@ async function fetchAppWithConfig(bundleId: string, config: AppleKeyConfig) {
   return appData.data?.[0] ?? null;
 }
 
-async function fetchVersionStatus(appId: string, token: string) {
-  const versionResponse = await fetch(`https://api.appstoreconnect.apple.com/v1/apps/${appId}/appStoreVersions?limit=1`, {
+async function fetchVersions(appId: string, token: string) {
+  const versionResponse = await fetch(`https://api.appstoreconnect.apple.com/v1/apps/${appId}/appStoreVersions?limit=5`, {
     headers: { 'Authorization': `Bearer ${token}` }
   });
   const versionData = await versionResponse.json();
-  return versionData.data?.[0] ?? null;
+  return versionData.data ?? [];
 }
 
 export async function fetchAppleAppStatus(bundleId: string) {
@@ -126,16 +126,30 @@ export async function fetchAppleAppStatus(bundleId: string) {
   }
 
   const token = getAppleToken(usedConfig);
-  const latestVersion = await fetchVersionStatus(foundApp.id, token);
+  const versions = await fetchVersions(foundApp.id, token);
 
-  if (!latestVersion) {
+  if (!versions.length) {
     return { status: AppStatus.PENDING_REVIEW, version: 'N/A', build: 'N/A' };
   }
 
-  const appleState = latestVersion.attributes.appStoreState;
+  // Priority logic for multiple versions (same as sync-now.mjs)
+  const rejectedV = versions.find((v: any) => 
+    v.attributes.appStoreState === 'REJECTED' || 
+    v.attributes.appStoreState === 'METADATA_REJECTED' || 
+    v.attributes.appStoreState === 'DEVELOPER_REJECTED'
+  );
+  const liveV = versions.find((v: any) => v.attributes.appStoreState === 'READY_FOR_SALE');
+  const latestV = versions[0];
+
+  let selectedV = rejectedV || liveV || latestV;
+  if (liveV && selectedV.attributes.appStoreState !== 'REJECTED') {
+    selectedV = liveV;
+  }
+
+  const appleState = selectedV.attributes.appStoreState;
   const status = statusMap[appleState] || AppStatus.PENDING_REVIEW;
 
-  const storeStatus = 'Producción'; // Standard for App Store
+  const storeStatus = 'Producción'; 
   const updateStatusMap: Record<string, string> = {
     READY_FOR_SALE: 'Publicado',
     WAITING_FOR_REVIEW: 'Pendiente de revisión',
@@ -150,11 +164,18 @@ export async function fetchAppleAppStatus(bundleId: string) {
     DEVELOPER_REMOVED_FROM_SALE: 'Retirado por desarrollador',
   };
 
-  return {
+  const result = {
     status,
     storeStatus,
     updateStatus: updateStatusMap[appleState] || appleState,
-    version: latestVersion.attributes.versionString,
+    version: selectedV.attributes.versionString,
     build: 'N/A',
   };
+
+  // If we are showing LIVE version but there's a newer one pending/in-review
+  if (liveV && latestV.id !== liveV.id) {
+    result.updateStatus += ` (Update: ${latestV.attributes.versionString} ${latestV.attributes.appStoreState})`;
+  }
+
+  return result;
 }
