@@ -76,13 +76,13 @@ export function getAppleToken(config: AppleKeyConfig) {
 const statusMap: Record<string, AppStatus> = {
   READY_FOR_SALE: AppStatus.PUBLISHED,
   WAITING_FOR_REVIEW: AppStatus.IN_REVIEW,
-  PENDING_DEVELOPER_RELEASE: AppStatus.PENDING_PUBLICATION,
+  PENDING_DEVELOPER_RELEASE: AppStatus.PUBLISHED,
   REJECTED: AppStatus.REJECTED,
   METADATA_REJECTED: AppStatus.REJECTED,
   DEVELOPER_REJECTED: AppStatus.REJECTED,
   PREPARE_FOR_SUBMISSION: AppStatus.PENDING_REVIEW,
   INVALID_BINARY: AppStatus.STORE_ISSUES,
-  PROCESSING_FOR_APP_STORE: AppStatus.PENDING_PUBLICATION,
+  PROCESSING_FOR_APP_STORE: AppStatus.PUBLISHED,
   REMOVED_FROM_SALE: AppStatus.STORE_ISSUES,
   DEVELOPER_REMOVED_FROM_SALE: AppStatus.STORE_ISSUES,
 };
@@ -138,7 +138,11 @@ export async function fetchAppleAppStatus(bundleId: string) {
     };
   }
 
-  const liveV = versions.find((v: any) => v.attributes.appStoreState === 'READY_FOR_SALE');
+  const liveOrApprovedV = versions.find((v: any) => 
+    v.attributes.appStoreState === 'READY_FOR_SALE' || 
+    v.attributes.appStoreState === 'PENDING_DEVELOPER_RELEASE' ||
+    v.attributes.appStoreState === 'PROCESSING_FOR_APP_STORE'
+  );
   const rejectedV = versions.find((v: any) => 
     v.attributes.appStoreState === 'REJECTED' || 
     v.attributes.appStoreState === 'METADATA_REJECTED' || 
@@ -146,7 +150,7 @@ export async function fetchAppleAppStatus(bundleId: string) {
   );
   const latestV = versions[0];
 
-  let selectedV = liveV || rejectedV || latestV;
+  let selectedV = liveOrApprovedV || rejectedV || latestV;
 
   const appleState = selectedV.attributes.appStoreState;
   const status = statusMap[appleState] || AppStatus.PENDING_REVIEW;

@@ -31,10 +31,17 @@ function makeToken(keyId, pk, issuerId) {
 }
 
 const stateMap = {
-  READY_FOR_SALE: 'PUBLISHED', WAITING_FOR_REVIEW: 'IN_REVIEW',
-  PENDING_DEVELOPER_RELEASE: 'PENDING_PUBLICATION', REJECTED: 'REJECTED',
-  METADATA_REJECTED: 'REJECTED', PREPARE_FOR_SUBMISSION: 'PENDING_REVIEW',
-  INVALID_BINARY: 'STORE_ISSUES', PROCESSING_FOR_APP_STORE: 'PENDING_PUBLICATION',
+  READY_FOR_SALE: 'PUBLISHED',
+  WAITING_FOR_REVIEW: 'IN_REVIEW',
+  PENDING_DEVELOPER_RELEASE: 'PUBLISHED',
+  PROCESSING_FOR_APP_STORE: 'PUBLISHED',
+  REJECTED: 'REJECTED',
+  METADATA_REJECTED: 'REJECTED',
+  DEVELOPER_REJECTED: 'REJECTED',
+  PREPARE_FOR_SUBMISSION: 'PENDING_REVIEW',
+  INVALID_BINARY: 'STORE_ISSUES',
+  REMOVED_FROM_SALE: 'STORE_ISSUES',
+  DEVELOPER_REMOVED_FROM_SALE: 'STORE_ISSUES',
 };
 
 const appleUpdateStatusMap = {
@@ -68,13 +75,15 @@ async function syncApple(bundleId) {
       // 2. If there is a READY_FOR_SALE (Live) version, the app is PUBLISHED, but maybe with a pending update.
       // 3. Otherwise, pick the latest created version.
       
-      const liveV = versions.find(v => v.attributes.appStoreState === 'READY_FOR_SALE');
+      const liveOrApprovedV = versions.find(v => 
+        ['READY_FOR_SALE', 'PENDING_DEVELOPER_RELEASE', 'PROCESSING_FOR_APP_STORE'].includes(v.attributes.appStoreState)
+      );
       const rejectedV = versions.find(v => 
         ['REJECTED', 'METADATA_REJECTED', 'DEVELOPER_REJECTED'].includes(v.attributes.appStoreState)
       );
       const latestV = versions[0];
 
-      let selectedV = liveV || rejectedV || latestV;
+      let selectedV = liveOrApprovedV || rejectedV || latestV;
       
       // Special case: if we are live but have a pending release or review, we might want to mention it.
       // For now, if live, we say PUBLISHED.
