@@ -81,14 +81,6 @@ async function syncApple(bundleId) {
         PROCESSING_FOR_APP_STORE: 'Procesando',
       };
 
-      const liveOrApprovedV = versions.find(v => 
-        ['READY_FOR_SALE', 'PENDING_DEVELOPER_RELEASE', 'PROCESSING_FOR_APP_STORE'].includes(v.attributes.appStoreState)
-      );
-      const rejectedV = versions.find(v => 
-        ['REJECTED', 'METADATA_REJECTED', 'DEVELOPER_REJECTED'].includes(v.attributes.appStoreState)
-      );
-      const latestV = versions[0];
-
       const latestV = versions[0];
       const liveV = versions.find(v => v.attributes.appStoreState === 'READY_FOR_SALE');
 
