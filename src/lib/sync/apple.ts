@@ -129,7 +129,13 @@ export async function fetchAppleAppStatus(bundleId: string) {
   const versions = await fetchVersions(foundApp.id, token);
 
   if (!versions.length) {
-    return { status: AppStatus.PENDING_REVIEW, version: 'N/A', build: 'N/A' };
+    return { 
+      status: AppStatus.PENDING_REVIEW, 
+      version: 'N/A', 
+      build: 'N/A',
+      storeStatus: 'Producción',
+      updateStatus: 'Sin versiones'
+    };
   }
 
   // Priority logic for multiple versions (same as sync-now.mjs)
