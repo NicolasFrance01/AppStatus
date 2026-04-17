@@ -134,8 +134,6 @@ export async function fetchGoogleAppStatus(packageName: string) {
         const storeVersion = await getStoreVersion(packageName);
         
         if (storeVersion) {
-          // Flexible matching: check if store version is part of the API version string or vice versa
-          // (Handles cases like API="19700 (1.97.0)" vs Store="1.97.0")
           const clean = (v: string) => v.replace(/[^\d\.]/g, ' ').trim();
           const vApi = clean(apiVersion);
           const vStore = clean(storeVersion);
@@ -143,8 +141,8 @@ export async function fetchGoogleAppStatus(packageName: string) {
           const isMatch = vApi.includes(vStore) || vStore.includes(vApi);
 
           if (!isMatch) {
-            finalStatus = AppStatus.PENDING_PUBLICATION; 
-            finalUpdateLabel = 'En revisión / Listo para publicar';
+            // Dual Status for Android: Keep PUBLISHED status but flag the update
+            finalUpdateLabel = `UPDATE:${apiVersion}|Lista para publicar`;
             console.log(`[Google] Managed Publishing detected for ${packageName}: Store(${storeVersion}) vs API(${apiVersion})`);
           }
         }

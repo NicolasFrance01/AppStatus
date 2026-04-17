@@ -70,11 +70,17 @@ async function syncApple(bundleId) {
       const versions = vData.data ?? [];
       if (!versions.length) return { status: 'PENDING_REVIEW', version: 'N/A', build: 'N/A' };
 
-      // Priority logic:
-      // 1. If any version is REJECTED or METADATA_REJECTED, that's crucial.
-      // 2. If there is a READY_FOR_SALE (Live) version, the app is PUBLISHED, but maybe with a pending update.
-      // 3. Otherwise, pick the latest created version.
-      
+      const updateLabelMap = {
+        READY_FOR_SALE: 'Publicado',
+        WAITING_FOR_REVIEW: 'En revisión',
+        PENDING_DEVELOPER_RELEASE: 'Lista para publicar',
+        REJECTED: 'Rechazada',
+        METADATA_REJECTED: 'Rechazada (Metadatos)',
+        DEVELOPER_REJECTED: 'Rechazada por DEV',
+        PREPARE_FOR_SUBMISSION: 'Preparando envío',
+        PROCESSING_FOR_APP_STORE: 'Procesando',
+      };
+
       const liveOrApprovedV = versions.find(v => 
         ['READY_FOR_SALE', 'PENDING_DEVELOPER_RELEASE', 'PROCESSING_FOR_APP_STORE'].includes(v.attributes.appStoreState)
       );
@@ -84,11 +90,23 @@ async function syncApple(bundleId) {
       const latestV = versions[0];
 
       let selectedV = liveOrApprovedV || rejectedV || latestV;
-      
-      // Special case: if we are live but have a pending release or review, we might want to mention it.
-      // For now, if live, we say PUBLISHED.
-      if (liveV && selectedV.attributes.appStoreState !== 'REJECTED') {
+      let status = stateMap[selectedV.attributes.appStoreState] || 'PENDING_REVIEW';
+      let updateLabel = updateLabelMap[selectedV.attributes.appStoreState] || 'Publicado';
+
+      // Dual Status Logic
+      const liveV = versions.find(v => v.attributes.appStoreState === 'READY_FOR_SALE');
+      if (liveV) {
         selectedV = liveV;
+        status = 'PUBLISHED';
+        updateLabel = 'Publicado';
+        
+        if (latestV.id !== liveV.id) {
+          const pendingLabel = updateLabelMap[latestV.attributes.appStoreState] || latestV.attributes.appStoreState;
+          updateLabel = `UPDATE:${latestV.attributes.versionString}|${pendingLabel}`;
+        } else if (rejectedV) {
+          const rejLabel = updateLabelMap[rejectedV.attributes.appStoreState] || 'Rechazada';
+          updateLabel = `UPDATE:${rejectedV.attributes.versionString}|${rejLabel}`;
+        }
       }
 
       const appleState = selectedV.attributes.appStoreState;
@@ -188,8 +206,14 @@ async function syncGoogle(packageName) {
           }
         }
 
-        console.log(`  🤖 ${label}: ${packageName} → ${finalStatus} v${apiVersion} (${build})`);
-        return { ...statusInfo, status: finalStatus, updateStatus: finalUpdateLabel, version: apiVersion, build: String(build) };
+        const latestV = mainRel;
+        const status = finalStatus;
+        const updateLabel = finalUpdateLabel;
+        const buildVal = latestV?.versionCodes?.[0] || 'N/A';
+        const apiVer = apiVersion;
+        
+        console.log(`  🤖 ${label}: ${packageName} → ${status} v${apiVer} (${buildVal})`);
+        return { status, updateStatus: updateLabel, version: apiVer, build: String(buildVal), storeStatus: 'Producción' };
       } finally {
         await ap.edits.delete({ packageName, editId }).catch(()=>{});
       }

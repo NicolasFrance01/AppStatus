@@ -76,13 +76,13 @@ export function getAppleToken(config: AppleKeyConfig) {
 const statusMap: Record<string, AppStatus> = {
   READY_FOR_SALE: AppStatus.PUBLISHED,
   WAITING_FOR_REVIEW: AppStatus.IN_REVIEW,
-  PENDING_DEVELOPER_RELEASE: AppStatus.PUBLISHED,
+  PENDING_DEVELOPER_RELEASE: AppStatus.PENDING_PUBLICATION,
   REJECTED: AppStatus.REJECTED,
   METADATA_REJECTED: AppStatus.REJECTED,
   DEVELOPER_REJECTED: AppStatus.REJECTED,
   PREPARE_FOR_SUBMISSION: AppStatus.PENDING_REVIEW,
   INVALID_BINARY: AppStatus.STORE_ISSUES,
-  PROCESSING_FOR_APP_STORE: AppStatus.PUBLISHED,
+  PROCESSING_FOR_APP_STORE: AppStatus.PENDING_PUBLICATION,
   REMOVED_FROM_SALE: AppStatus.STORE_ISSUES,
   DEVELOPER_REMOVED_FROM_SALE: AppStatus.STORE_ISSUES,
 };
@@ -138,45 +138,48 @@ export async function fetchAppleAppStatus(bundleId: string) {
     };
   }
 
-  const liveOrApprovedV = versions.find((v: any) => 
-    v.attributes.appStoreState === 'READY_FOR_SALE' || 
-    v.attributes.appStoreState === 'PENDING_DEVELOPER_RELEASE' ||
-    v.attributes.appStoreState === 'PROCESSING_FOR_APP_STORE'
-  );
+  const updateStatusMap: Record<string, string> = {
+    READY_FOR_SALE: 'Publicado',
+    WAITING_FOR_REVIEW: 'En revisión',
+    PENDING_DEVELOPER_RELEASE: 'Aprobada / Lista para publicar',
+    REJECTED: 'Rechazada',
+    METADATA_REJECTED: 'Rechazada (Metadatos)',
+    DEVELOPER_REJECTED: 'Rechazada por desarrollador',
+    PREPARE_FOR_SUBMISSION: 'Preparando envío',
+    INVALID_BINARY: 'Binario inválido',
+    PROCESSING_FOR_APP_STORE: 'Procesando para el Store',
+    REMOVED_FROM_SALE: 'Retirado de venta',
+    DEVELOPER_REMOVED_FROM_SALE: 'Retirado por desarrollador',
+  };
+
+  const liveV = versions.find((v: any) => v.attributes.appStoreState === 'READY_FOR_SALE');
+  const latestV = versions[0];
   const rejectedV = versions.find((v: any) => 
     v.attributes.appStoreState === 'REJECTED' || 
     v.attributes.appStoreState === 'METADATA_REJECTED' || 
     v.attributes.appStoreState === 'DEVELOPER_REJECTED'
   );
-  const latestV = versions[0];
 
-  let selectedV = liveOrApprovedV || rejectedV || latestV;
+  let selectedV = liveV || rejectedV || latestV;
+  const status = statusMap[selectedV.attributes.appStoreState] || AppStatus.PENDING_REVIEW;
+  let updateLabel = updateStatusMap[selectedV.attributes.appStoreState] || 'Publicado';
 
-  const appleState = selectedV.attributes.appStoreState;
-  const status = statusMap[appleState] || AppStatus.PENDING_REVIEW;
+  // Dual Status Logic: If we are live but have a pending update, prepare specific label
+  if (liveV && latestV.id !== liveV.id) {
+    const pendingState = latestV.attributes.appStoreState;
+    const pendingLabel = updateStatusMap[pendingState] || pendingState;
+    updateLabel = `UPDATE:${latestV.attributes.versionString}|${pendingLabel}`;
+  } else if (liveV && rejectedV) {
+    // If live but also have a rejection, show rejection info
+    const rejectedLabel = updateStatusMap[rejectedV.attributes.appStoreState] || 'Rechazada';
+    updateLabel = `UPDATE:${rejectedV.attributes.versionString}|${rejectedLabel}`;
+  }
 
-  const storeStatus = 'Producción'; 
-  const updateStatusMap: Record<string, string> = {
-    READY_FOR_SALE: 'Publicado',
-    WAITING_FOR_REVIEW: 'Pendiente de revisión',
-    PENDING_DEVELOPER_RELEASE: 'Pendiente de publicación',
-    REJECTED: 'Rechazado',
-    METADATA_REJECTED: 'Rechazado (Metadatos)',
-    DEVELOPER_REJECTED: 'Rechazado por desarrollador',
-    PREPARE_FOR_SUBMISSION: 'Preparando para envío',
-    INVALID_BINARY: 'Binario inválido',
-    PROCESSING_FOR_APP_STORE: 'Procesando',
-    REMOVED_FROM_SALE: 'Retirado de venta',
-    DEVELOPER_REMOVED_FROM_SALE: 'Retirado por desarrollador',
-  };
-
-  const result = {
+  return {
     status,
-    storeStatus,
-    updateStatus: updateStatusMap[appleState] || appleState,
+    storeStatus: 'Producción',
+    updateStatus: updateLabel,
     version: selectedV.attributes.versionString,
     build: 'N/A',
   };
-
-  return result;
 }

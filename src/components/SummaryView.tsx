@@ -89,10 +89,19 @@ function SummaryTable({ title, filteredApps, isBee = false, isFirebase = false }
                     )}
                   </div>
                   <div className={cn(
-                    "bg-white border-b border-slate-300 p-2 flex items-center justify-center font-bold text-center leading-tight min-h-[48px]",
+                    "bg-white border-b border-slate-300 p-2 flex flex-col items-center justify-center font-bold text-center leading-tight min-h-[48px]",
                     !isFirebase && "border-r"
                   )}>
-                    {version}{build}
+                    <span>{version}{build}</span>
+                    {app?.updateStatus?.startsWith('UPDATE:') && (
+                      <div className="mt-1 px-1.5 py-0.5 bg-amber-100 text-amber-800 text-[9px] rounded-full border border-amber-200 flex items-center gap-1 group relative">
+                        <span className="animate-pulse">⏳</span>
+                        <span>v{app.updateStatus.split(':')[1].split('|')[0]}</span>
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none">
+                          {app.updateStatus.split('|')[1]}
+                        </div>
+                      </div>
+                    )}
                   </div>
                   {!isFirebase && (
                     <div className={cn("border-b border-slate-300 p-2 flex items-center justify-center font-bold text-center leading-tight min-h-[40px]", statusStyles)}>
