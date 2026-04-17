@@ -93,6 +93,13 @@ function SummaryTable({ title, filteredApps, isBee = false, isFirebase = false }
                     !isFirebase && "border-r"
                   )}>
                     <span className="text-slate-800">{version}{build}</span>
+                    {app?.updateStatus?.startsWith('LIVE:') && (
+                      <div className="mt-1.5 px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] rounded-sm border border-emerald-200 flex items-center gap-1 shadow-sm font-medium">
+                        <span className="text-[10px]">✅</span>
+                        <span className="whitespace-nowrap">En Store: v{app.updateStatus.split(':')[1]}</span>
+                      </div>
+                    )}
+                    {/* Retrocompatibility with UPDATE prefix if any exists */}
                     {app?.updateStatus?.startsWith('UPDATE:') && (
                       <div className="mt-1.5 px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] rounded-sm border border-blue-200 flex flex-col items-center gap-0.5 shadow-sm">
                         <div className="flex items-center gap-1 font-extrabold uppercase tracking-tighter text-[9px]">

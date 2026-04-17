@@ -89,24 +89,16 @@ async function syncApple(bundleId) {
       );
       const latestV = versions[0];
 
-      let selectedV = liveOrApprovedV || rejectedV || latestV;
-      let status = stateMap[selectedV.attributes.appStoreState] || 'PENDING_REVIEW';
+      const latestV = versions[0];
+      const liveV = versions.find(v => v.attributes.appStoreState === 'READY_FOR_SALE');
+
+      const selectedV = latestV;
+      const status = stateMap[selectedV.attributes.appStoreState] || 'PENDING_REVIEW';
       let updateLabel = updateLabelMap[selectedV.attributes.appStoreState] || 'Publicado';
 
-      // Dual Status Logic
-      const liveV = versions.find(v => v.attributes.appStoreState === 'READY_FOR_SALE');
-      if (liveV) {
-        selectedV = liveV;
-        status = 'PUBLISHED';
-        updateLabel = 'Publicado';
-        
-        if (latestV.id !== liveV.id) {
-          const pendingLabel = updateLabelMap[latestV.attributes.appStoreState] || latestV.attributes.appStoreState;
-          updateLabel = `UPDATE:${latestV.attributes.versionString}|${pendingLabel}`;
-        } else if (rejectedV) {
-          const rejLabel = updateLabelMap[rejectedV.attributes.appStoreState] || 'Rechazada';
-          updateLabel = `UPDATE:${rejectedV.attributes.versionString}|${rejLabel}`;
-        }
+      // Dual Status Logic: Latest-First
+      if (liveV && liveV.id !== latestV.id) {
+        updateLabel = `LIVE:${liveV.attributes.versionString}`;
       }
 
       const appleState = selectedV.attributes.appStoreState;

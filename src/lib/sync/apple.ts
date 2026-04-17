@@ -152,27 +152,17 @@ export async function fetchAppleAppStatus(bundleId: string) {
     DEVELOPER_REMOVED_FROM_SALE: 'Retirado por desarrollador',
   };
 
-  const liveV = versions.find((v: any) => v.attributes.appStoreState === 'READY_FOR_SALE');
   const latestV = versions[0];
-  const rejectedV = versions.find((v: any) => 
-    v.attributes.appStoreState === 'REJECTED' || 
-    v.attributes.appStoreState === 'METADATA_REJECTED' || 
-    v.attributes.appStoreState === 'DEVELOPER_REJECTED'
-  );
+  const liveV = versions.find((v: any) => v.attributes.appStoreState === 'READY_FOR_SALE');
 
-  let selectedV = liveV || rejectedV || latestV;
+  const selectedV = latestV;
   const status = statusMap[selectedV.attributes.appStoreState] || AppStatus.PENDING_REVIEW;
   let updateLabel = updateStatusMap[selectedV.attributes.appStoreState] || 'Publicado';
 
-  // Dual Status Logic: If we are live but have a pending update, prepare specific label
-  if (liveV && latestV.id !== liveV.id) {
-    const pendingState = latestV.attributes.appStoreState;
-    const pendingLabel = updateStatusMap[pendingState] || pendingState;
-    updateLabel = `UPDATE:${latestV.attributes.versionString}|${pendingLabel}`;
-  } else if (liveV && rejectedV) {
-    // If live but also have a rejection, show rejection info
-    const rejectedLabel = updateStatusMap[rejectedV.attributes.appStoreState] || 'Rechazada';
-    updateLabel = `UPDATE:${rejectedV.attributes.versionString}|${rejectedLabel}`;
+  // Dual Status Logic: Latest-First
+  // If latest is NOT the live version, but a live version exists, add LIVE badge
+  if (liveV && liveV.id !== latestV.id) {
+    updateLabel = `LIVE:${liveV.attributes.versionString}`;
   }
 
   return {

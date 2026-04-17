@@ -141,8 +141,8 @@ export async function fetchGoogleAppStatus(packageName: string) {
           const isMatch = vApi.includes(vStore) || vStore.includes(vApi);
 
           if (!isMatch) {
-            // Dual Status for Android: Keep PUBLISHED status but flag the update
-            finalUpdateLabel = `UPDATE:${apiVersion}|Lista para publicar`;
+            // Dual Status for Android: Priority to Latest (API)
+            finalUpdateLabel = `LIVE:${storeVersion}`;
             console.log(`[Google] Managed Publishing detected for ${packageName}: Store(${storeVersion}) vs API(${apiVersion})`);
           }
         }
