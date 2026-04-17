@@ -92,12 +92,14 @@ function SummaryTable({ title, filteredApps, isBee = false, isFirebase = false }
                     "bg-white border-b border-slate-300 p-2 flex flex-col items-center justify-center font-bold text-center leading-tight min-h-[48px]",
                     !isFirebase && "border-r"
                   )}>
-                    <span>{version}{build}</span>
+                    <span className="text-slate-800">{version}{build}</span>
                     {app?.updateStatus?.startsWith('UPDATE:') && (
-                      <div className="mt-1 px-1.5 py-0.5 bg-amber-100 text-amber-800 text-[9px] rounded-full border border-amber-200 flex items-center gap-1 group relative">
-                        <span className="animate-pulse">⏳</span>
-                        <span>v{app.updateStatus.split(':')[1].split('|')[0]}</span>
-                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none">
+                      <div className="mt-1.5 px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] rounded-sm border border-blue-200 flex flex-col items-center gap-0.5 shadow-sm">
+                        <div className="flex items-center gap-1 font-extrabold uppercase tracking-tighter text-[9px]">
+                          <span className="animate-pulse">⏳</span>
+                          <span>Update: {app.updateStatus.split(':')[1].split('|')[0]}</span>
+                        </div>
+                        <div className="text-[10px] font-medium leading-none italic">
                           {app.updateStatus.split('|')[1]}
                         </div>
                       </div>
