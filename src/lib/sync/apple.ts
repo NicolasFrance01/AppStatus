@@ -141,7 +141,7 @@ export async function fetchAppleAppStatus(bundleId: string) {
   const updateStatusMap: Record<string, string> = {
     READY_FOR_SALE: 'Publicado',
     WAITING_FOR_REVIEW: 'En revisión',
-    PENDING_DEVELOPER_RELEASE: 'Aprobada / Lista para publicar',
+    PENDING_DEVELOPER_RELEASE: 'Lista para publicarse',
     REJECTED: 'Rechazada',
     METADATA_REJECTED: 'Rechazada (Metadatos)',
     DEVELOPER_REJECTED: 'Rechazada por desarrollador',
@@ -152,7 +152,22 @@ export async function fetchAppleAppStatus(bundleId: string) {
     DEVELOPER_REMOVED_FROM_SALE: 'Retirado por desarrollador',
   };
 
-  const latestV = versions[0];
+  const compareVersions = (a: string, b: string) => {
+    const va = a.split('.').map(Number);
+    const vb = b.split('.').map(Number);
+    for (let i = 0; i < Math.max(va.length, vb.length); i++) {
+      const numA = va[i] || 0;
+      const numB = vb[i] || 0;
+      if (numA !== numB) return numB - numA;
+    }
+    return 0;
+  };
+
+  const sortedVersions = [...versions].sort((a, b) => 
+    compareVersions(a.attributes.versionString, b.attributes.versionString)
+  );
+
+  const latestV = sortedVersions[0];
   const status = statusMap[latestV.attributes.appStoreState] || AppStatus.PENDING_REVIEW;
   const updateLabel = updateStatusMap[latestV.attributes.appStoreState] || 'Publicado';
 

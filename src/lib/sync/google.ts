@@ -138,11 +138,11 @@ export async function fetchGoogleAppStatus(packageName: string) {
             const vApi   = cleanVersion(apiVersion);
             const vStore = cleanVersion(storeVersion);
 
-            const isMatch = vApi === vStore || vApi.startsWith(vStore) || vStore.startsWith(vApi);
+            const isMatch = vApi === vStore || vApi.startsWith(vStore + ".") || vStore.startsWith(vApi + ".");
             if (!isMatch) {
               console.log(`[Google] Managed Publishing: API=${apiVersion}, Store=${storeVersion} → PENDING_PUBLICATION`);
               finalStatus = AppStatus.PENDING_PUBLICATION;
-              finalUpdateLabel = 'Lista para publicar';
+              finalUpdateLabel = 'Lista para publicarse';
             }
           }
         } catch (e) {

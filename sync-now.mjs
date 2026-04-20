@@ -73,7 +73,7 @@ async function syncApple(bundleId) {
       const updateLabelMap = {
         READY_FOR_SALE: 'Publicado',
         WAITING_FOR_REVIEW: 'En revisión',
-        PENDING_DEVELOPER_RELEASE: 'Lista para publicar',
+        PENDING_DEVELOPER_RELEASE: 'Lista para publicarse',
         REJECTED: 'Rechazada',
         METADATA_REJECTED: 'Rechazada (Metadatos)',
         DEVELOPER_REJECTED: 'Rechazada por DEV',
@@ -81,7 +81,22 @@ async function syncApple(bundleId) {
         PROCESSING_FOR_APP_STORE: 'Procesando',
       };
 
-      const latestV = versions[0];
+      const compareVersions = (a, b) => {
+        const va = String(a).split('.').map(Number);
+        const vb = String(b).split('.').map(Number);
+        for (let i = 0; i < Math.max(va.length, vb.length); i++) {
+          const numA = va[i] || 0;
+          const numB = vb[i] || 0;
+          if (numA !== numB) return numB - numA;
+        }
+        return 0;
+      };
+
+      const sortedVersions = [...versions].sort((a, b) => 
+        compareVersions(a.attributes.versionString, b.attributes.versionString)
+      );
+
+      const latestV = sortedVersions[0];
       const status = stateMap[latestV.attributes.appStoreState] || 'PENDING_REVIEW';
       const updateLabel = updateLabelMap[latestV.attributes.appStoreState] || 'Publicado';
 
