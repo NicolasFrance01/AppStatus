@@ -126,29 +126,8 @@ export async function fetchGoogleAppStatus(packageName: string) {
       let finalStatus = statusInfo.status;
       let finalUpdateLabel = statusInfo.updateStatus;
 
-      // Managed Publishing Detection:
-      // Google Play API returns 'completed' even for apps using Managed Publishing
-      // (where the dev controls when the update goes live). We must compare the
-      // API version vs the version actually visible in the store to detect this.
-      if (statusInfo.status === AppStatus.PUBLISHED && productionTrack) {
-        try {
-          const storeVersion = await getStoreVersion(packageName);
-          if (storeVersion) {
-            const cleanVersion = (v: string) => v.replace(/[^\d.]/g, '.').replace(/\.+/g, '.').replace(/\.$/, '');
-            const vApi   = cleanVersion(apiVersion);
-            const vStore = cleanVersion(storeVersion);
-
-            const isMatch = vApi === vStore || vApi.startsWith(vStore + ".") || vStore.startsWith(vApi + ".");
-            if (!isMatch) {
-              console.log(`[Google] Managed Publishing: API=${apiVersion}, Store=${storeVersion} → PENDING_PUBLICATION`);
-              finalStatus = AppStatus.PENDING_PUBLICATION;
-              finalUpdateLabel = 'Lista para publicarse';
-            }
-          }
-        } catch (e) {
-          console.warn(`[Google] Could not compare store version for ${packageName}`);
-        }
-      }
+      // NOTE: We trust the API status directly as 'PUBLISHED' if it's 'completed'.
+      // Managed Publishing detection via store scraping is unreliable due to Play Store CDN lag.
 
       console.log(`[Google] Found "${packageName}" using ${label} account`);
       return {

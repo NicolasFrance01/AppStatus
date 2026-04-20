@@ -176,24 +176,8 @@ async function syncGoogle(packageName) {
         let finalStatus = statusInfo.status;
         let finalUpdateLabel = statusInfo.updateStatus;
 
-        // Managed Publishing: compare API version vs live store version
-        if (statusInfo.status === 'PUBLISHED') {
-          const storeVersion = await getStoreVersion(packageName);
-          if (storeVersion) {
-            const clean = (v) => v.replace(/[^\d.]/g, '.').replace(/\.+/g, '.').replace(/\.$/, '');
-            const vApi = clean(apiVersion);
-            const vStore = clean(storeVersion);
-            const isMatch = vApi === vStore || vApi.startsWith(vStore) || vStore.startsWith(vApi);
-
-            if (!isMatch) {
-              finalStatus = 'PENDING_PUBLICATION';
-              finalUpdateLabel = 'Lista para publicarse';
-              console.log(`  🔍 Managed Publishing detected for ${packageName}: Store(${storeVersion}) vs API(${apiVersion})`);
-            }
-          }
-        }
-
-        const latestV = mainRel;
+        // NOTE: We trust the API status directly as 'PUBLISHED' if it's 'completed'.
+        // Managed Publishing detection via store scraping is unreliable due to Play Store CDN lag.
         const status = finalStatus;
         const updateLabel = finalUpdateLabel;
         const buildVal = latestV?.versionCodes?.[0] || 'N/A';

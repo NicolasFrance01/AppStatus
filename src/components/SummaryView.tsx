@@ -92,7 +92,10 @@ function SummaryTable({ title, filteredApps, isBee = false, isFirebase = false }
                     "bg-white border-b border-slate-300 p-2 flex flex-col items-center justify-center font-bold text-center leading-tight min-h-[48px]",
                     !isFirebase && "border-r"
                   )}>
-                    <span className="text-slate-800">{version}{build}</span>
+                    <span className="text-slate-800">
+                      {version}
+                      {build && build !== "N/A" && build !== "0" && !version?.includes(build.replace(/[()]/g, "")) ? ` (${build})` : ""}
+                    </span>
                   </div>
                   {!isFirebase && (
                     <div className={cn("border-b border-slate-300 p-2 flex items-center justify-center font-bold text-center leading-tight min-h-[40px]", statusStyles)}>
