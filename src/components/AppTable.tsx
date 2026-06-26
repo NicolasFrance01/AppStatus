@@ -57,26 +57,31 @@ export function AppTable({ apps, statusFilter, bankFilter, onBankChange }: AppTa
       apps.forEach((app: any) => {
         if (app.releases) {
           app.releases.forEach((rel: any) => {
-            // Strict categorization based on version prefix and name
+            // Strict categorization based on app metadata and version validation
             const v = (rel.version || rel.displayVersion || "");
             const appName = (app.name || "").toLowerCase();
-            const isIndividuoName = appName.includes("individuo");
+            const bundleId = (app.bundleId || "").toLowerCase();
             
-            const isHbiVersion = /\b(1|11)\.\d+/.test(v);
-            const isBeeVersion = /\b(2|22|32)\.\d+/.test(v);
-            
-            // ABSOLUTE FILTER: Individuo apps MUST have 1.x or 11.x versions.
-            // Business/UAT apps MUST have 2.x, 22.x, or 32.x versions.
-            if (isIndividuoName && !isHbiVersion) return; 
-            if (!isIndividuoName && isHbiVersion) return;
-
             let actualSegment = "OTHERS";
             if (app.segment === 'UAT' || appName.includes('uat')) {
               // For Android, UAT apps should be shown under EMPRESAS (BEE) as there's no UAT segment filter.
               actualSegment = app.platform === 'ANDROID' ? "BEE" : "UAT";
+            } else if (app.segment === 'EMPRESAS' || app.segment === 'BEE' || appName.includes("empresas") || bundleId.includes("empresas")) {
+              actualSegment = "BEE";
+            } else if (app.segment === 'INDIVIDUOS' || app.segment === 'HBI' || appName.includes("individuo") || (bundleId.includes("banco") && !bundleId.includes("empresas"))) {
+              actualSegment = "HBI";
             }
-            else if (isBeeVersion) actualSegment = "BEE";
-            else if (isHbiVersion) actualSegment = "HBI";
+
+            // Version validation to prevent contaminated/wrong tracks in the release table
+            if (actualSegment === "HBI") {
+              // HBI now allows 1.x, 11.x, and 2.x versions
+              const isValidHbi = /\b(1|11|2)\.\d+/.test(v);
+              if (!isValidHbi) return;
+            } else if (actualSegment === "BEE") {
+              // BEE allows 2.x, 22.x, and 32.x versions
+              const isValidBee = /\b(2|22|32)\.\d+/.test(v);
+              if (!isValidBee) return;
+            }
 
             // Enforce segment filtering
             if (segmentFilter !== 'all' && actualSegment !== segmentFilter) return;

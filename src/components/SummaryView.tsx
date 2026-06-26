@@ -113,18 +113,25 @@ function SummaryTable({ title, filteredApps, isBee = false, isFirebase = false }
 }
 
 export function SummaryView({ apps, isFirebase = false }: SummaryViewProps) {
-  // BEE: version 2.x.x, HBI: version 1.x.x
-  const beeApps = apps.filter((app) => 
-    (app as any).segment === 'BEE' || 
-    (app as any).calculatedSegment === 'BEE' || 
-    /\b(2|22|32)\.\d+/.test(app.currentVersion || "")
-  );
+  const beeApps = apps.filter((app) => {
+    const segment = (app as any).segment || (app as any).calculatedSegment;
+    if (segment === 'BEE' || segment === 'EMPRESAS') return true;
+    if (segment === 'HBI' || segment === 'INDIVIDUOS') return false;
+    
+    const name = (app.name || "").toLowerCase();
+    const bundleId = (app.bundleId || "").toLowerCase();
+    return name.includes("empresas") || bundleId.includes("empresas") || name.includes("bee");
+  });
   
-  const hbiApps = apps.filter((app) => 
-    (app as any).segment === 'HBI' || 
-    (app as any).calculatedSegment === 'HBI' ||
-    /\b(1|11)\.\d+/.test(app.currentVersion || "")
-  );
+  const hbiApps = apps.filter((app) => {
+    const segment = (app as any).segment || (app as any).calculatedSegment;
+    if (segment === 'HBI' || segment === 'INDIVIDUOS') return true;
+    if (segment === 'BEE' || segment === 'EMPRESAS') return false;
+    
+    const name = (app.name || "").toLowerCase();
+    const bundleId = (app.bundleId || "").toLowerCase();
+    return !name.includes("empresas") && !bundleId.includes("empresas") && !name.includes("bee");
+  });
 
   return (
     <div className="mb-12 mt-4 space-y-6">
